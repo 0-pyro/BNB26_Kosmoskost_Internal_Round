@@ -91,8 +91,8 @@ export function CaptionDisplay({ speakerGroups, timeline, viewMode }: CaptionDis
     return (
       <div className="caption-display empty" data-testid="caption-display-empty">
         <div className="empty-state">
-          <div className="empty-icon">💬</div>
-          <p>Captions will appear here…</p>
+          <div className="empty-icon">[AWAITING AUDIO]</div>
+          <p>Captions will appear here...</p>
         </div>
       </div>
     );
