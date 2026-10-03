@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import hashlib
 import json
 import logging
 import os
@@ -44,6 +45,8 @@ from ws1_backend.session import (
     SessionManager,
     session_manager,
 )
+from ws3_dsp.select import compute_rms, get_best_frame
+from ws4_eval.asr_client import ASRClient
 
 logging.basicConfig(
     level=logging.INFO,
@@ -75,6 +78,12 @@ SCRIPTED_CAPTIONS = [
     ("The quick brown fox jumps over the lazy dog.", True),
 ]
 _caption_seq = 0
+
+# Initialize ASR Client instance
+asr_client = ASRClient(
+    engine=os.environ.get("ASR_ENGINE", "mock").lower(),
+    api_key=os.environ.get("GROQ_API_KEY") or os.environ.get("ASSEMBLYAI_API_KEY"),
+)
 
 
 def _generate_mock_caption(speaker_id: str, speaker_name: str) -> CaptionEvent:
@@ -251,15 +260,42 @@ async def _handle_websocket_connection(websocket: WebSocket) -> None:
                     len(raw_bytes) - AUDIO_HEADER_SIZE,
                 )
 
-                # Mock ASR caption generation if configured
+                # Multi-Device DSP Selection (ws3_dsp)
+                participant_map = {}
+                if current_room:
+                    for p in current_room.participants.values():
+                        h = int(hashlib.sha256(p.name.encode()).hexdigest(), 16) % 65536
+                        participant_map[h] = p.id
+                    participant_map[header.participant_id_hash] = current_participant.id
+
+                # Route frame through DSP loudness selection
+                selected = get_best_frame([raw_bytes], participant_map=participant_map)
+                speaker_id = selected.speaker_id if selected.speaker_id != "unknown" else current_participant.id
+                speaker_name = current_participant.name
+                if current_room and speaker_id in current_room.participants:
+                    speaker_name = current_room.participants[speaker_id].name
+
+                # ASR Processing: Cloud ASR if configured, or Mock fallback
                 asr_engine = os.environ.get("ASR_ENGINE", "mock").lower()
                 enable_mock_asr = os.environ.get("ENABLE_MOCK_ASR", "true").lower() in ("true", "1")
-                if asr_engine == "mock" and enable_mock_asr and current_room and current_participant:
-                    # Emit simulated caption response after small delay
-                    caption = _generate_mock_caption(
-                        current_participant.id, current_participant.name
-                    )
-                    await current_room.add_caption(caption, broadcast=True)
+                if current_room and current_participant:
+                    if asr_engine in ("groq", "assemblyai") and asr_client.api_key:
+                        try:
+                            events = await asr_client.transcribe_chunk(
+                                raw_bytes,
+                                speaker_id=speaker_id,
+                                speaker_name=speaker_name,
+                                start_ts=header.capture_ts,
+                            )
+                            for ev in events:
+                                await current_room.add_caption(ev, broadcast=True)
+                        except Exception as exc:
+                            logger.warning("Cloud ASR transcription failed: %s, falling back to mock", exc)
+                            caption = _generate_mock_caption(speaker_id, speaker_name)
+                            await current_room.add_caption(caption, broadcast=True)
+                    elif enable_mock_asr:
+                        caption = _generate_mock_caption(speaker_id, speaker_name)
+                        await current_room.add_caption(caption, broadcast=True)
 
     except WebSocketDisconnect:
         logger.info("Client %s disconnected cleanly", client_str)

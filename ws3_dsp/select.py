@@ -177,3 +177,7 @@ def select_loudest_frame(
         max_rms = 0.0
 
     return SelectedFrame(frame=best_item, speaker_id=best_speaker_id, rms=max_rms)
+
+
+# Alias per architecture contract
+get_best_frame = select_loudest_frame
