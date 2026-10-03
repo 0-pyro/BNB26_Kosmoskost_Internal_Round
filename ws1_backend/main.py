@@ -79,7 +79,7 @@ SCRIPTED_CAPTIONS = [
 ]
 _caption_seq = 0
 
-SPEECH_RMS_THRESHOLD = float(os.environ.get("SPEECH_THRESHOLD", "0.005"))
+SPEECH_RMS_THRESHOLD = float(os.environ.get("SPEECH_THRESHOLD", "0.015"))
 
 # Initialize ASR Client instance
 _initial_key = os.environ.get("GROQ_API_KEY") or os.environ.get("ASSEMBLYAI_API_KEY")

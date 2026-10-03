@@ -264,6 +264,14 @@ class ASRClient:
                 text = seg.get("text", "").strip()
                 if not text:
                     continue
+                    
+                # Filter out common Whisper hallucinations on silence/noise
+                clean_text = text.lower().strip(" .?!,")
+                hallucinations = ["thank you", "all right", "okay", "oh", "hello there", "you", "bye", "amara.org", "subs by"]
+                if clean_text in hallucinations or not any(c.isalpha() for c in text):
+                    logger.debug("Filtered out likely hallucination: '%s'", text)
+                    continue
+
                 seg_start_s = float(seg.get("start", 0.0))
                 seg_end_s = float(seg.get("end", seg_start_s + 1.0))
                 event = CaptionEvent(
@@ -280,6 +288,12 @@ class ASRClient:
         else:
             full_text = data.get("text", "").strip()
             if full_text:
+                clean_text = full_text.lower().strip(" .?!,")
+                hallucinations = ["thank you", "all right", "okay", "oh", "hello there", "you", "bye", "amara.org", "subs by"]
+                if clean_text in hallucinations or not any(c.isalpha() for c in full_text):
+                    logger.debug("Filtered out likely hallucination: '%s'", full_text)
+                    return events
+                    
                 duration_s = float(data.get("duration", 1.0))
                 event = CaptionEvent(
                     segment_id=self._next_segment_id(),
