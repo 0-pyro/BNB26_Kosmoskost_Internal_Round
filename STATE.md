@@ -1,23 +1,26 @@
 # STATE.md — L0 Checkpoint State
 
-## Current Checkpoint: 1 (Step 3 Complete)
-**Timestamp:** 2026-10-03T17:36Z
+## Current Checkpoint: 2 (Step 5 Complete — FINAL)
+**Timestamp:** 2026-10-03T17:38Z
 **Branch:** `lead_skeleton`
 
 ## Completed Steps
 - [x] Step 1: Skeleton directories created (`ws1_backend`, `ws2_client`, `ws3_dsp`, `ws4_eval`, `contracts`)
-- [x] Step 1: Root files created (`.gitignore`, `Makefile`, `docker-compose.yml`)
-- [x] Step 2: `contracts/models.py` — all Pydantic models (JoinRequest, TimeSyncRequest, JoinAck, TimeSyncResponse, CaptionEvent, AudioFrameHeader, Session, Participant)
-- [x] Step 2: Verified `python -c "from contracts.models import *"` — no error
-- [x] Step 3: `ws4_eval/mock_server.py` — WebSocket server, handles JOIN/SYNC/binary frames, malformed frame guard
-- [x] Step 3: Verified server starts and responds to JOIN with JOIN_ACK
-- [x] Step 3: `ws4_eval/tests/test_mock_server.py` — 6 tests, all pass
+- [x] Step 1: Root files created (`.gitignore`, `Makefile`, `docker-compose.yml`, `pyproject.toml`)
+- [x] Step 2: `contracts/models.py` — all Pydantic models verified via import
+- [x] Step 3: `ws4_eval/mock_server.py` — verified: starts, responds to JOIN with JOIN_ACK
+- [x] Step 3: Checkpoint 1 committed
+- [x] Step 4: `ws4_eval/virtual_client.py` — verified: sends 30 frames, receives 30 CaptionEvents
+- [x] Step 5: `ws4_eval/proxy.py` — verified: adds latency, forwards messages correctly
+- [x] Step 5: Checkpoint 2 committed
+- [x] Tests: 6/6 pass (`python -m pytest ws4_eval/tests/ -v`)
+- [x] Documentation: INTEGRATION.md, NOTES.md, STATE.md
 
-## In Progress
-- [ ] Step 4: `ws4_eval/virtual_client.py` — written, needs end-to-end verification
-- [ ] Step 5: `ws4_eval/proxy.py` — written, needs end-to-end verification
-
-## Pending
-- [ ] Step 6: Final test pass
-- [ ] Step 7: Documentation (INTEGRATION.md, NOTES.md)
-- [ ] Git push
+## Evidence Log
+| Step | Command | Result |
+|------|---------|--------|
+| 2 | `python -c "from contracts.models import *"` | `All models imported OK` |
+| 3 | `python -m pytest ws4_eval/tests/ -v` | `6 passed in 0.57s` |
+| 3 | Ping server with JOIN | `{"type":"JOIN_ACK","participant_id":"p_6be3156f","history":[]}` |
+| 4 | `python ws4_eval/virtual_client.py` | 30 frames sent, 30 captions received, exit 0 |
+| 5 | Proxy test with 100ms latency | `Proxy responded in 2286ms` (includes both directions), verified |
