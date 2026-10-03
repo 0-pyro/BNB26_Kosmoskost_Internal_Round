@@ -15,16 +15,16 @@ and behaviorally identical except for the color palette.
 
 ------------------------------------------------------------------------
 
-## 1. Target Light Theme Palette
+## 1. Target Dark Theme Palette
 
 Use ONLY these four colors as the new light-theme palette:
 
   Color         Hex
   ------------- -----------
-  Light Cream   `#FFF9D2`
-  Soft Peach    `#FFEBCC`
-  Light Blue    `#BFDDF0`
-  Sky Blue      `#8CC0EB`
+  Dark Navy Blue   `#0C134F`
+  Royal Blue    `#1D267D`
+  Purple    `#5C469C`
+  Light Lavender      `#D4ADFC`
 
 These are the exact colors requested. Do not replace them with similar
 shades, gradients, automatically generated shades, or alternative
@@ -153,11 +153,10 @@ Use the four colors thoughtfully within the existing design.
 
 Suggested palette roles:
 
--   `#FFF9D2` --- primary light/background surface
--   `#FFEBCC` --- secondary warm surface/card/section background
--   `#BFDDF0` --- secondary blue surface, borders, or supporting UI
--   `#8CC0EB` --- stronger blue accent, buttons, active states, or
-    highlights
+-   `#0C134F` --- primary dark/background surface
+-   `#1D267D` --- secondary surface/card/section background
+-   `#5C469C` --- borders, secondary surface, supporting UI
+-   `#D4ADFC` --- strong accent, buttons, active states, or highlights
 
 These role suggestions are guidance only. Preserve the existing
 website's current hierarchy and component design.
@@ -253,8 +252,8 @@ the website.
 ### Required palette
 
 ``` text
-#FFF9D2
-#FFEBCC
-#BFDDF0
-#8CC0EB
+#0C134F
+#1D267D
+#5C469C
+#D4ADFC
 ```

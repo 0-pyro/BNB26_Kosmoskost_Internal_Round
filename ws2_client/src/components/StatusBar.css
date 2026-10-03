@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------
    StatusBar.css
-   Light Theme Palette: #FFF9D2, #FFEBCC, #BFDDF0, #8CC0EB
+   Dark Theme Palette: #0C134F, #1D267D, #5C469C, #D4ADFC
    ---------------------------------------------------------------- */
 
 .status-bar {
@@ -8,8 +8,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.6rem 1rem;
-  background: #FFEBCC;
-  border-bottom: 1px solid #BFDDF0;
+  background: #1D267D;
+  border-bottom: 1px solid #5C469C;
   flex-shrink: 0;
 }
 
@@ -35,7 +35,7 @@
 
 .status-text {
   font-size: 0.8rem;
-  color: #1e293b;
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
 }
 
@@ -54,15 +54,15 @@
 
 .participant-id {
   font-size: 0.7rem;
-  color: #64748b;
+  color: #D4ADFC;
   font-family: monospace;
 }
 
 .room-badge {
   font-size: 0.75rem;
-  color: #0f172a;
-  background: #BFDDF0;
-  border: 1px solid #8CC0EB;
+  color: #D4ADFC;
+  background: #0C134F;
+  border: 1px solid #5C469C;
   padding: 0.15rem 0.5rem;
   border-radius: 6px;
   font-weight: 500;
@@ -70,9 +70,9 @@
 
 .caption-counter {
   font-size: 0.75rem;
-  color: #1e293b;
-  background: #FFF9D2;
-  border: 1px solid #BFDDF0;
+  color: rgba(255, 255, 255, 0.9);
+  background: #0C134F;
+  border: 1px solid #5C469C;
   padding: 0.15rem 0.5rem;
   border-radius: 6px;
 }
@@ -85,16 +85,16 @@
   padding: 0.15rem 0.55rem;
   border-radius: 6px;
   font-family: monospace;
-  background: #FFF9D2;
-  border: 1px solid #BFDDF0;
+  background: #0C134F;
+  border: 1px solid #5C469C;
 }
 
 .latency-chip.good {
-  color: #15803d;
+  color: #86efac;
 }
 
 .latency-chip.warning {
-  color: #b45309;
+  color: #fde047;
 }
 
 .p95-label {

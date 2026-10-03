@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------
    JoinScreen.css
-   Light Theme Palette: #FFF9D2, #FFEBCC, #BFDDF0, #8CC0EB
+   Dark Theme Palette: #0C134F, #1D267D, #5C469C, #D4ADFC
    ---------------------------------------------------------------- */
 
 .join-screen {
@@ -10,17 +10,17 @@
   min-height: 100vh;
   min-height: 100dvh;
   padding: 1.5rem;
-  background: #FFF9D2;
+  background: #0C134F;
 }
 
 .join-card {
   width: 100%;
   max-width: 380px;
-  background: #FFEBCC;
-  border: 1px solid #BFDDF0;
+  background: #1D267D;
+  border: 1px solid #5C469C;
   border-radius: 20px;
   padding: 2.5rem 2rem;
-  box-shadow: 0 8px 32px rgba(140, 192, 235, 0.25);
+  box-shadow: 0 8px 32px rgba(12, 19, 79, 0.6);
 }
 
 .join-logo {
@@ -37,13 +37,13 @@
 .logo-text {
   font-size: 1.8rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #D4ADFC;
   margin: 0;
 }
 
 .logo-sub {
   font-size: 0.85rem;
-  color: #64748b;
+  color: rgba(212, 173, 252, 0.7);
   margin: 0.25rem 0 0;
 }
 
@@ -62,29 +62,29 @@
 .field label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #475569;
+  color: #D4ADFC;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .field input {
   padding: 0.7rem 1rem;
-  background: #FFF9D2;
-  border: 1px solid #BFDDF0;
+  background: #0C134F;
+  border: 1px solid #5C469C;
   border-radius: 10px;
-  color: #1e293b;
+  color: #ffffff;
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .field input:focus {
-  border-color: #8CC0EB;
-  box-shadow: 0 0 0 3px rgba(140, 192, 235, 0.4);
+  border-color: #D4ADFC;
+  box-shadow: 0 0 0 3px rgba(212, 173, 252, 0.35);
 }
 
 .field input::placeholder {
-  color: #94a3b8;
+  color: rgba(212, 173, 252, 0.4);
 }
 
 .advanced-toggle {
@@ -95,7 +95,7 @@
 .text-link {
   background: none;
   border: none;
-  color: #475569;
+  color: #D4ADFC;
   font-size: 0.75rem;
   cursor: pointer;
   padding: 0;
@@ -104,7 +104,7 @@
 }
 
 .text-link:hover {
-  color: #8CC0EB;
+  color: #ffffff;
 }
 
 .btn-join {
