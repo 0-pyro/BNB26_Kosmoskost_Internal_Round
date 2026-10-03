@@ -39,6 +39,29 @@ class SelectedFrame(tuple):
         return f"SelectedFrame(frame={self.frame!r}, speaker_id={self.speaker_id!r}, rms={self.rms:.4f})"
 
 
+def decode_float32_payload(payload: bytes) -> np.ndarray:
+    """Decode Float32 PCM payload bytes, auto-detecting little vs big endian."""
+    n_floats = len(payload) // 4
+    if n_floats == 0:
+        return np.zeros(0, dtype=np.float32)
+    chunk = payload[: n_floats * 4]
+    le = np.frombuffer(chunk, dtype="<f4")
+    be = np.frombuffer(chunk, dtype=">f4")
+
+    if np.all(le == 0):
+        return le
+
+    le_plausible = ((np.abs(le) >= 1e-5) & (np.abs(le) <= 5.0) & ~np.isnan(le)).sum()
+    be_plausible = ((np.abs(be) >= 1e-5) & (np.abs(be) <= 5.0) & ~np.isnan(be)).sum()
+
+    if be_plausible > le_plausible:
+        return be
+    elif le_plausible > be_plausible:
+        return le
+
+    return be
+
+
 def compute_rms(audio: Union[np.ndarray, Sequence[float], bytes]) -> float:
     """Compute Root Mean Square (RMS) energy of an audio frame.
 
@@ -50,14 +73,7 @@ def compute_rms(audio: Union[np.ndarray, Sequence[float], bytes]) -> float:
             payload = audio[AUDIO_HEADER_SIZE:]
         else:
             payload = audio
-        n_floats = len(payload) // 4
-        if n_floats == 0:
-            return 0.0
-        try:
-            samples = struct.unpack(f">{n_floats}f", payload[: n_floats * 4])
-        except struct.error:
-            samples = struct.unpack(f"<{n_floats}f", payload[: n_floats * 4])
-        arr = np.asarray(samples, dtype=np.float64)
+        arr = decode_float32_payload(payload)
     else:
         arr = np.asarray(audio, dtype=np.float64)
         if arr.ndim > 1:

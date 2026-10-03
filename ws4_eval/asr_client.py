@@ -36,6 +36,8 @@ from contracts.models import (
     CaptionEvent,
 )
 
+from ws3_dsp.select import decode_float32_payload
+
 logger = logging.getLogger("asr_client")
 
 GROQ_TRANSCRIPTION_URL = "https://api.groq.com/openai/v1/audio/transcriptions"
@@ -57,12 +59,7 @@ def audio_to_wav_bytes(
             payload = audio[AUDIO_HEADER_SIZE:]
         else:
             payload = audio
-        n_floats = len(payload) // 4
-        try:
-            samples = struct.unpack(f">{n_floats}f", payload[: n_floats * 4])
-        except struct.error:
-            samples = struct.unpack(f"<{n_floats}f", payload[: n_floats * 4])
-        float_arr = np.asarray(samples, dtype=np.float32)
+        float_arr = decode_float32_payload(payload)
     else:
         float_arr = np.asarray(audio, dtype=np.float32)
         if float_arr.ndim > 1:
@@ -90,12 +87,7 @@ def audio_to_pcm16_bytes(
             payload = audio[AUDIO_HEADER_SIZE:]
         else:
             payload = audio
-        n_floats = len(payload) // 4
-        try:
-            samples = struct.unpack(f">{n_floats}f", payload[: n_floats * 4])
-        except struct.error:
-            samples = struct.unpack(f"<{n_floats}f", payload[: n_floats * 4])
-        float_arr = np.asarray(samples, dtype=np.float32)
+        float_arr = decode_float32_payload(payload)
     else:
         float_arr = np.asarray(audio, dtype=np.float32)
         if float_arr.ndim > 1:

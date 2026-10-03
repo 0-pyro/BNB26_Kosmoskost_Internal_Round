@@ -14,22 +14,18 @@ import numpy as np
 from scipy import fft, signal
 
 
+from ws3_dsp.select import decode_float32_payload
+
+
 def _to_float_array(audio: Union[np.ndarray, Sequence[float], bytes]) -> np.ndarray:
     """Convert input audio (ndarray, list, or Float32 bytes) to a 1D float64 array."""
     if isinstance(audio, bytes):
-        # Check if it has 16-byte header
         if len(audio) >= 16 and audio[:2] == b"\xAA\xBB":
             payload = audio[16:]
         else:
             payload = audio
-        n_floats = len(payload) // 4
-        # Contracts specify big-endian Float32: ">...f"
-        # We also check native float32 fallback if big-endian is not packed
-        try:
-            samples = struct.unpack(f">{n_floats}f", payload[: n_floats * 4])
-        except struct.error:
-            samples = struct.unpack(f"<{n_floats}f", payload[: n_floats * 4])
-        return np.asarray(samples, dtype=np.float64)
+        arr = decode_float32_payload(payload)
+        return arr.astype(np.float64)
 
     arr = np.asarray(audio, dtype=np.float64)
     if arr.ndim > 1:

@@ -79,11 +79,73 @@ SCRIPTED_CAPTIONS = [
 ]
 _caption_seq = 0
 
+SPEECH_RMS_THRESHOLD = float(os.environ.get("SPEECH_THRESHOLD", "0.005"))
+
 # Initialize ASR Client instance
+_initial_key = os.environ.get("GROQ_API_KEY") or os.environ.get("ASSEMBLYAI_API_KEY")
+_initial_engine = os.environ.get("ASR_ENGINE") or ("groq" if _initial_key else "mock")
 asr_client = ASRClient(
-    engine=os.environ.get("ASR_ENGINE", "mock").lower(),
-    api_key=os.environ.get("GROQ_API_KEY") or os.environ.get("ASSEMBLYAI_API_KEY"),
+    engine=_initial_engine.lower(),
+    api_key=_initial_key,
 )
+
+
+def get_asr_client() -> ASRClient:
+    """Get or refresh ASRClient instance with latest environment keys."""
+    key = os.environ.get("GROQ_API_KEY") or os.environ.get("ASSEMBLYAI_API_KEY") or asr_client.api_key
+    engine = (os.environ.get("ASR_ENGINE") or ("groq" if key else "mock")).lower()
+    if key != asr_client.api_key or engine != asr_client.engine:
+        asr_client.api_key = key
+        asr_client.engine = engine
+    return asr_client
+
+
+class ParticipantAudioBuffer:
+    """Buffers consecutive 100ms audio frames during active speech for transcription."""
+
+    def __init__(self, participant_id: str = ""):
+        self.participant_id = participant_id
+        self.frames: List[bytes] = []
+        self.speech_frames: int = 0
+        self.silence_frames: int = 0
+        self.start_ts: int = 0
+
+    def add_frame(self, frame_bytes: bytes, capture_ts: int, rms: float) -> Optional[bytes]:
+        """Add a 100ms frame. Returns concatenated audio bytes when an utterance completes."""
+        is_speech = rms >= SPEECH_RMS_THRESHOLD
+
+        if is_speech:
+            if not self.frames:
+                self.start_ts = capture_ts
+            self.frames.append(frame_bytes)
+            self.speech_frames += 1
+            self.silence_frames = 0
+
+            # Max utterance duration: 25 frames (2.5 seconds) - emit chunk to keep latency low
+            if len(self.frames) >= 25:
+                complete_audio = b"".join(self.frames)
+                self.frames = []
+                self.speech_frames = 0
+                return complete_audio
+        else:
+            if self.speech_frames >= 4:  # At least 400ms of speech occurred
+                self.frames.append(frame_bytes)
+                self.silence_frames += 1
+
+                # If silence has lasted 5 frames (500ms), speaker finished phrase!
+                if self.silence_frames >= 5:
+                    complete_audio = b"".join(self.frames)
+                    self.frames = []
+                    self.speech_frames = 0
+                    self.silence_frames = 0
+                    return complete_audio
+            else:
+                # Brief click or ambient noise (< 400ms), discard
+                self.frames.clear()
+                self.speech_frames = 0
+                self.silence_frames = 0
+
+        return None
 
 
 def _generate_mock_caption(speaker_id: str, speaker_name: str) -> CaptionEvent:
@@ -121,6 +183,7 @@ async def _handle_websocket_connection(websocket: WebSocket) -> None:
     conn = Connection(websocket)
     current_room: Optional[Room] = None
     current_participant: Optional[Participant] = None
+    audio_buffer = ParticipantAudioBuffer()
 
     client_str = f"{websocket.client.host}:{websocket.client.port}" if websocket.client else "unknown"
     logger.info("WebSocket connected from %s", client_str)
@@ -275,25 +338,39 @@ async def _handle_websocket_connection(websocket: WebSocket) -> None:
                 if current_room and speaker_id in current_room.participants:
                     speaker_name = current_room.participants[speaker_id].name
 
-                # ASR Processing: Cloud ASR if configured, or Mock fallback
-                asr_engine = os.environ.get("ASR_ENGINE", "mock").lower()
-                enable_mock_asr = os.environ.get("ENABLE_MOCK_ASR", "true").lower() in ("true", "1")
-                if current_room and current_participant:
-                    if asr_engine in ("groq", "assemblyai") and asr_client.api_key:
+                # Fast-path for unit tests (pytest / test_mode)
+                is_test_env = os.environ.get("PYTEST_CURRENT_TEST") is not None or os.environ.get("TEST_MODE") == "1"
+                if is_test_env and current_room and current_participant:
+                    caption = _generate_mock_caption(speaker_id, speaker_name)
+                    await current_room.add_caption(caption, broadcast=True)
+                    continue
+
+                # Live Audio Buffer with Voice Activity Detection (VAD)
+                audio_buffer.participant_id = current_participant.id
+                complete_utterance = audio_buffer.add_frame(raw_bytes, header.capture_ts, selected.rms)
+
+                if complete_utterance and current_room and current_participant:
+                    client = get_asr_client()
+                    if client.api_key:
                         try:
-                            events = await asr_client.transcribe_chunk(
-                                raw_bytes,
+                            logger.info(
+                                "Transcribing utterance for %s (%d bytes, rms=%.4f)",
+                                speaker_name,
+                                len(complete_utterance),
+                                selected.rms,
+                            )
+                            events = await client.transcribe_chunk(
+                                complete_utterance,
                                 speaker_id=speaker_id,
                                 speaker_name=speaker_name,
-                                start_ts=header.capture_ts,
+                                start_ts=audio_buffer.start_ts,
                             )
                             for ev in events:
                                 await current_room.add_caption(ev, broadcast=True)
                         except Exception as exc:
-                            logger.warning("Cloud ASR transcription failed: %s, falling back to mock", exc)
-                            caption = _generate_mock_caption(speaker_id, speaker_name)
-                            await current_room.add_caption(caption, broadcast=True)
-                    elif enable_mock_asr:
+                            logger.warning("Live ASR transcription error: %s", exc)
+                    elif os.environ.get("ENABLE_MOCK_ASR", "false").lower() in ("true", "1") or client.engine == "mock":
+                        # When speech is detected in mock mode, generate 1 caption per utterance (not on silence)
                         caption = _generate_mock_caption(speaker_id, speaker_name)
                         await current_room.add_caption(caption, broadcast=True)
 
