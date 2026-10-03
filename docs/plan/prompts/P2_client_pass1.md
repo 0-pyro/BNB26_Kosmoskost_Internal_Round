@@ -25,6 +25,7 @@ You will test against the Mock Server built by the Lead (`ws4_eval/mock_server.p
 Node.js 18+. `npx create-react-app .` (or Vite). 
 
 ## 6. Build steps
+0. **Repo Setup:** Run git clone https://github.com/0-pyro/BNB26_Kosmoskost_Internal_Round . (if the directory is empty). Ensure you are inside the repository, then run git checkout -b ws2_client.
 1. **React App:** Initialize Vite/React app in `/ws2_client`.
 2. **WebSocket Client:** Create `useWebSocket.ts`. Handle reconnects and buffering offline events.
 3. **AudioWorklet:** Create `processor.js`. It must capture 16kHz audio, create 100ms Float32 buffers, prepend the 16-byte binary header, and postMessage to the main thread to send via WebSocket.

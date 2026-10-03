@@ -25,6 +25,7 @@ Use `/contracts/models.py`. Assume ASR is a mock for now.
 Python 3.10+. `pip install fastapi uvicorn websockets pydantic`.
 
 ## 6. Build steps
+0. **Repo Setup:** Run git clone https://github.com/0-pyro/BNB26_Kosmoskost_Internal_Round . (if the directory is empty). Ensure you are inside the repository, then run git checkout -b ws1_backend.
 1. **Server Setup:** Create `ws1_backend/main.py`. Set up FastAPI app and WebSocket endpoint `/ws`.
 2. **Session Manager:** Create `ws1_backend/session.py`. Maintain a dict of active `ROOMS`. Each room holds connected Websockets and a history list of `CaptionEvent`.
 3. **Join Flow:** Handle `JoinRequest`. Generate a `participant_id`. Reply with `JoinAck` and historical captions.

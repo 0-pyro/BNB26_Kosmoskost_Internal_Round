@@ -19,7 +19,7 @@
 
 ## Git & Integration Runbook
 **Setup:**
-`git clone <repo> && cd roundtable`
+`git clone https://github.com/0-pyro/BNB26_Kosmoskost_Internal_Round .`
 `git checkout -b ws1_backend` (etc.)
 
 **Daily Sync:**

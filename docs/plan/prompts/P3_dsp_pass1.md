@@ -21,6 +21,7 @@ Forbidden paths: `/ws1_backend`, `/ws2_client`.
 Python 3.10+. 
 
 ## 6. Build steps
+0. **Repo Setup:** Run git clone https://github.com/0-pyro/BNB26_Kosmoskost_Internal_Round . (if the directory is empty). Ensure you are inside the repository, then run git checkout -b ws3_dsp.
 1. **Alignment:** Create `ws3_dsp/align.py`. Write a GCC-PHAT function using `scipy.fft` to find the sample delay between two 100ms audio chunks.
 2. **Selection logic:** Create `ws3_dsp/select.py`. Given N audio frames from different participants for the same time window (aligned), compute the RMS energy. Output the frame with the highest energy and its associated `speaker_id`.
    [CHECKPOINT]
