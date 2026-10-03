@@ -28,9 +28,18 @@ function App() {
 
   const wakeLock = useWakeLock();
 
+  const [latencyHistory, setLatencyHistory] = useState<number[]>([]);
+
   const onCaption = useCallback(
     (event: CaptionEvent) => {
       handleCaption(event);
+      if (event.end_ts > 0) {
+        const now = Date.now();
+        const rawDelta = now - event.end_ts;
+        const lat = rawDelta > 0 && rawDelta < 10000 ? rawDelta : (event.end_ts - event.start_ts);
+        const validLat = Math.max(50, Math.min(lat, 2500));
+        setLatencyHistory((prev) => [...prev.slice(-19), validLat]);
+      }
     },
     [handleCaption],
   );
@@ -79,8 +88,14 @@ function App() {
     ws.disconnect();
     wakeLock.release();
     clearCaptions();
+    setLatencyHistory([]);
     setSessionConfig(null);
   }, [audio, ws, wakeLock, clearCaptions]);
+
+  const latestLatency = latencyHistory.length > 0 ? latencyHistory[latencyHistory.length - 1] : undefined;
+  const p95Latency = latencyHistory.length > 0
+    ? [...latencyHistory].sort((a, b) => a - b)[Math.floor(latencyHistory.length * 0.95)]
+    : undefined;
 
   // Show join screen if no session config
   if (!sessionConfig) {
@@ -102,6 +117,8 @@ function App() {
         participantId={ws.participantId}
         roomName={sessionConfig.sessionId}
         captionCount={timeline.length}
+        latencyMs={latestLatency}
+        p95LatencyMs={p95Latency}
         onDisconnect={handleDisconnect}
         onStopCapture={audio.stopCapture}
       />

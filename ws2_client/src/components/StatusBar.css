@@ -74,3 +74,30 @@
   padding: 0.15rem 0.5rem;
   border-radius: 6px;
 }
+
+.latency-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  font-family: monospace;
+}
+
+.latency-chip.good {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.latency-chip.warning {
+  color: #fde047;
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.p95-label {
+  font-size: 0.68rem;
+  opacity: 0.75;
+}

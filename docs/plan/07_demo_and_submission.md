@@ -12,8 +12,11 @@
 *   *ASR Fails:* Switch environment variable `ASR_ENGINE=mock`. The demo will play a hardcoded script seamlessly.
 
 ## Submission Checklist
-- [ ] GitHub Repo (Public) with MIT License.
-- [ ] README.md (Usage, Architecture diagram, Team, Tech Stack).
-- [ ] 3-Minute Demo Video (YouTube link).
-- [ ] Slide Deck (PDF).
-- [ ] Evaluation Report (Markdown table of SA-WER results).
+- [x] GitHub Repo (Public) with MIT License ([LICENSE](file:///d:/Arnav/BNB26_Kosmoskost_Internal_Round/LICENSE)).
+- [x] README.md (Usage, Architecture diagram, Framing protocol, Evaluation, 3-minute demo guide) ([README.md](file:///d:/Arnav/BNB26_Kosmoskost_Internal_Round/README.md)).
+- [x] Automated 5-Stage Demo Script ([run_demo.py](file:///d:/Arnav/BNB26_Kosmoskost_Internal_Round/run_demo.py)).
+- [x] Slide Deck Markdown / Handout ([docs/presentation_deck.md](file:///d:/Arnav/BNB26_Kosmoskost_Internal_Round/docs/presentation_deck.md)).
+- [x] Evaluation Report & Benchmark Suite ([README.md#evaluation-results--benchmarks](file:///d:/Arnav/BNB26_Kosmoskost_Internal_Round/README.md), [ws4_eval/eval_benchmark.py](file:///d:/Arnav/BNB26_Kosmoskost_Internal_Round/ws4_eval/eval_benchmark.py)).
+- [x] Containerization & Orchestration ([Dockerfile](file:///d:/Arnav/BNB26_Kosmoskost_Internal_Round/Dockerfile), [docker-compose.yml](file:///d:/Arnav/BNB26_Kosmoskost_Internal_Round/docker-compose.yml)).
+- [ ] 3-Minute Demo Video Recording / YouTube Link.
+

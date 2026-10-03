@@ -9,6 +9,8 @@ interface StatusBarProps {
   participantId: string | null;
   roomName?: string;
   captionCount?: number;
+  latencyMs?: number;
+  p95LatencyMs?: number;
   onDisconnect: () => void;
   onStopCapture: () => void;
 }
@@ -38,9 +40,13 @@ export function StatusBar({
   participantId,
   roomName,
   captionCount,
+  latencyMs,
+  p95LatencyMs,
   onDisconnect,
   onStopCapture,
 }: StatusBarProps) {
+  const isLatencyGood = p95LatencyMs !== undefined && p95LatencyMs < 1500;
+
   return (
     <div className="status-bar" data-testid="status-bar">
       <div className="status-left">
@@ -61,7 +67,7 @@ export function StatusBar({
         {captureStatus === "active" && (
           <div className="status-indicator mic-active">
             <span className="mic-icon">🎙️</span>
-            <span className="status-text">Recording (16kHz)</span>
+            <span className="status-text">16kHz Mic</span>
           </div>
         )}
 
@@ -73,6 +79,20 @@ export function StatusBar({
       </div>
 
       <div className="status-right">
+        {latencyMs !== undefined && (
+          <div
+            className={`latency-chip ${isLatencyGood ? "good" : "warning"}`}
+            title="Real-time measured caption latency (REQ-5 target: <1.5s p95)"
+            data-testid="latency-chip"
+          >
+            <span className="latency-icon">⚡</span>
+            <span>{latencyMs}ms</span>
+            {p95LatencyMs !== undefined && (
+              <span className="p95-label">p95: {p95LatencyMs}ms</span>
+            )}
+          </div>
+        )}
+
         {captionCount !== undefined && captionCount > 0 && (
           <span className="caption-counter" data-testid="caption-counter">
             {captionCount} {captionCount === 1 ? "caption" : "captions"}
