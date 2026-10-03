@@ -1,55 +1,44 @@
-/* ----------------------------------------------------------------
-   App.css — Main application styles
-   Dark Theme Palette: #0C134F, #1D267D, #5C469C, #D4ADFC
-   ---------------------------------------------------------------- */
-
 .app-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: #0C134F;
+  background: var(--bg-primary);
 }
-
-/* ---- View toggle ---- */
 
 .view-toggle {
   display: flex;
   align-items: center;
-  gap: 0;
-  padding: 0.6rem 1rem;
-  background: #1D267D;
-  border-bottom: 1px solid #5C469C;
+  justify-content: center;
+  padding: 1rem;
+  background: var(--bg-primary);
+  border-bottom: 2px solid var(--border);
+  gap: 1rem;
   flex-shrink: 0;
 }
 
 .toggle-btn {
-  padding: 0.4rem 1rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-  border: 1px solid #5C469C;
-  background: #0C134F;
-  color: #D4ADFC;
+  padding: 0.5rem 1.5rem;
+  font-size: 1.2rem;
+  font-family: inherit;
+  text-transform: uppercase;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.toggle-btn:first-child {
-  border-radius: 8px 0 0 8px;
-}
-
-.toggle-btn:last-child {
-  border-radius: 0 8px 8px 0;
-  border-left: none;
+  border-radius: 0;
+  box-shadow: 4px 4px 0px #5C469C;
+  transition: all 0.1s ease;
 }
 
 .toggle-btn.active {
-  background: #5C469C;
-  color: #ffffff;
-  border-color: #D4ADFC;
+  background: var(--accent);
+  color: var(--bg-primary);
+  box-shadow: 2px 2px 0px #5C469C;
+  transform: translate(2px, 2px);
 }
 
 .toggle-btn:hover:not(.active) {
-  background: #1D267D;
-  color: #ffffff;
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }

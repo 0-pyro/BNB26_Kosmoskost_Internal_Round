@@ -1,169 +1,116 @@
-/* ----------------------------------------------------------------
-   CaptionDisplay.css — Styles for caption rendering
-   Dark Theme Palette: #0C134F, #1D267D, #5C469C, #D4ADFC
-   ---------------------------------------------------------------- */
-
 .caption-display {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
-  scroll-behavior: smooth;
-  background: #0C134F;
-}
-
-.caption-display.empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.empty-state {
-  text-align: center;
-  color: #D4ADFC;
-  font-size: 1.1rem;
-}
-
-.empty-icon {
-  font-size: 3rem;
-  margin-bottom: 0.75rem;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.1); }
-}
-
-/* ---- Grouped view ---- */
-
-.grouped-view {
+  padding: 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
 }
 
-.speaker-section {
-  background: #1D267D;
-  border-radius: 12px;
-  padding: 1rem;
-  border: 1px solid #5C469C;
-}
-
-.speaker-header {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.75rem;
-}
-
-.speaker-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #0C134F;
-  font-weight: 700;
-  font-size: 0.85rem;
-  flex-shrink: 0;
-}
-
-.speaker-name {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #D4ADFC;
-}
-
-.speaker-captions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-/* ---- Caption bubbles ---- */
-
-.caption-bubble {
-  padding: 0.35rem 0;
-  transition: opacity 0.3s ease;
-}
-
-.caption-bubble.partial {
-  opacity: 0.55;
-}
-
-.caption-bubble.final {
-  opacity: 1;
-}
-
-.caption-text {
-  font-size: 1rem;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.95);
-}
-
-.partial-indicator {
-  display: inline-block;
-  margin-left: 0.4rem;
-  color: #D4ADFC;
-  font-size: 0.6rem;
-  vertical-align: middle;
-  animation: blink 1s ease-in-out infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
-}
-
-/* ---- Timeline view ---- */
-
+/* Timeline View */
 .timeline-view {
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
+}
+
+.caption-message {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
 }
 
-.timeline-entry {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
+.speaker-name {
+  font-weight: normal;
+  color: var(--accent);
+  background: var(--bg-primary);
+  border: 2px solid var(--border);
+  padding: 2px 8px;
+  text-transform: uppercase;
+}
+
+.timestamp {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.message-text {
+  font-size: 1.5rem;
+  line-height: 1.4;
+  color: var(--text-primary);
   padding: 0.5rem 0;
-  transition: opacity 0.3s ease;
+  transition: all 0.2s ease;
 }
 
-.timeline-entry.partial {
-  opacity: 0.55;
+.message-text.partial {
+  opacity: 0.6;
+  font-style: italic;
 }
 
-.timeline-entry.final {
+.message-text.final {
   opacity: 1;
+  text-shadow: 0 0 5px var(--accent-glow);
 }
 
-.timeline-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-top: 0.45rem;
-  flex-shrink: 0;
+/* Grouped View */
+.grouped-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-.timeline-content {
+.speaker-column {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  box-shadow: 6px 6px 0px #5C469C;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
 }
 
-.timeline-speaker {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #D4ADFC;
+.column-header {
+  padding: 1rem;
+  border-bottom: 2px solid var(--border);
+  background: var(--bg-primary);
+}
+
+.column-header h3 {
+  font-size: 1.5rem;
+  color: var(--accent);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  margin: 0;
 }
 
-.timeline-text {
-  font-size: 1rem;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.95);
+.column-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.column-content .caption-message {
+  border-left: 4px solid var(--accent);
+  padding-left: 1rem;
+}
+
+.column-content .speaker-name {
+  display: none; /* Hide since column header has it */
+}
+
+/* Auto-scroll anchor */
+.scroll-anchor {
+  height: 1px;
 }

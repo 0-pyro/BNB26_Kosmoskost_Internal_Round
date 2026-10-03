@@ -1,26 +1,18 @@
-/* ----------------------------------------------------------------
-   JoinScreen.css
-   Dark Theme Palette: #0C134F, #1D267D, #5C469C, #D4ADFC
-   ---------------------------------------------------------------- */
-
 .join-screen {
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding: 1.5rem;
-  background: #0C134F;
+  padding: 1rem;
 }
 
 .join-card {
   width: 100%;
-  max-width: 380px;
-  background: #1D267D;
-  border: 1px solid #5C469C;
-  border-radius: 20px;
-  padding: 2.5rem 2rem;
-  box-shadow: 0 8px 32px rgba(12, 19, 79, 0.6);
+  max-width: 420px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  box-shadow: 8px 8px 0px #5C469C;
+  padding: 2.5rem;
 }
 
 .join-logo {
@@ -32,19 +24,23 @@
   font-size: 3rem;
   display: block;
   margin-bottom: 0.5rem;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent-glow);
 }
 
 .logo-text {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #D4ADFC;
-  margin: 0;
+  font-size: 2.5rem;
+  font-weight: normal;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 5px var(--accent-glow);
 }
 
 .logo-sub {
-  font-size: 0.85rem;
-  color: rgba(212, 173, 252, 0.7);
-  margin: 0.25rem 0 0;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
 }
 
 .join-form {
@@ -56,61 +52,52 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .field label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #D4ADFC;
+  font-size: 1.1rem;
+  color: var(--text-primary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .field input {
-  padding: 0.7rem 1rem;
-  background: #0C134F;
-  border: 1px solid #5C469C;
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-primary);
+  border: 2px solid var(--border);
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-family: inherit;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .field input:focus {
-  border-color: #D4ADFC;
-  box-shadow: 0 0 0 3px rgba(212, 173, 252, 0.35);
-}
-
-.field input::placeholder {
-  color: rgba(212, 173, 252, 0.4);
+  border-color: var(--text-primary);
+  box-shadow: 0 0 8px var(--accent-glow);
 }
 
 .advanced-toggle {
-  text-align: right;
-  margin-top: -0.5rem;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .text-link {
   background: none;
   border: none;
-  color: #D4ADFC;
-  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
   cursor: pointer;
-  padding: 0;
   text-decoration: underline;
-  transition: color 0.2s ease;
+  font-family: inherit;
 }
 
 .text-link:hover {
-  color: #ffffff;
+  color: var(--text-primary);
+  text-shadow: 0 0 5px var(--accent-glow);
 }
 
 .btn-join {
-  margin-top: 0.5rem;
-  padding: 0.8rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 10px;
+  margin-top: 1rem;
+  padding: 1rem;
+  font-size: 1.5rem;
 }

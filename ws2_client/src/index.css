@@ -1,9 +1,9 @@
 /* ----------------------------------------------------------------
-   index.css — Global reset & design system
-   Dark Theme Palette: #0C134F, #1D267D, #5C469C, #D4ADFC
+   index.css - Y2K / Cyber Web 1.0 Retro Theme
+   Palette: #0C134F, #1D267D, #5C469C, #D4ADFC
    ---------------------------------------------------------------- */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
 *,
 *::before,
@@ -14,30 +14,36 @@
 }
 
 :root {
-  /* Target dark theme palette */
   --bg-primary: #0C134F;
   --bg-secondary: #1D267D;
   --surface: #1D267D;
   --surface-hover: #5C469C;
-  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-primary: #D4ADFC;
   --text-secondary: #D4ADFC;
   --accent: #D4ADFC;
-  --accent-glow: rgba(212, 173, 252, 0.35);
+  --accent-glow: rgba(212, 173, 252, 0.8);
   --danger: #ef4444;
   --success: #22c55e;
-  --border: #5C469C;
+  --border: #D4ADFC;
 }
 
 html, body {
   height: 100%;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'VT323', monospace, 'Courier New', Courier;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: 20px;
   line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: none; /* Blocky text */
   overflow: hidden;
+  /* Retro scanlines */
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 2px
+  );
 }
 
 #root {
@@ -45,81 +51,83 @@ html, body {
 }
 
 /* ---- Buttons ---- */
-
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
   padding: 0.55rem 1.25rem;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: normal;
   font-family: inherit;
-  border: none;
-  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 2px solid var(--border);
+  box-shadow: 4px 4px 0px #5C469C;
+  border-radius: 0; /* Square edges */
   cursor: pointer;
-  transition: all 0.2s ease;
+  text-transform: uppercase;
+  transition: all 0.1s ease;
   outline: none;
 }
 
 .btn:disabled {
-  opacity: 0.4;
+  opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
+  transform: translate(2px, 2px);
 }
 
 .btn-primary {
-  background: #D4ADFC;
-  color: #0C134F;
-  box-shadow: 0 2px 12px rgba(212, 173, 252, 0.4);
+  background: #5C469C;
+  color: #D4ADFC;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #ffffff;
-  box-shadow: 0 4px 20px rgba(212, 173, 252, 0.5);
-  transform: translateY(-1px);
+  background: #D4ADFC;
+  color: #0C134F;
+  box-shadow: 2px 2px 0px #5C469C;
+  transform: translate(2px, 2px);
 }
 
 .btn-primary:active:not(:disabled) {
-  transform: translateY(0);
+  box-shadow: 0px 0px 0px #5C469C;
+  transform: translate(4px, 4px);
 }
 
 .btn-danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: #0C134F;
+  color: #ef4444;
+  border-color: #ef4444;
+  box-shadow: 4px 4px 0px #ef4444;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.25);
+  background: #ef4444;
+  color: #0C134F;
+  box-shadow: 2px 2px 0px #ef4444;
+  transform: translate(2px, 2px);
 }
 
 .btn-sm {
-  padding: 0.3rem 0.75rem;
-  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 1rem;
 }
 
 /* ---- Scrollbar ---- */
-
 ::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
+  width: 12px;
+  background: var(--bg-primary);
+  border-left: 2px solid var(--border);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #5C469C;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #D4ADFC;
+  background: var(--surface-hover);
+  border: 2px solid var(--border);
 }
 
 /* ---- Selection ---- */
-
 ::selection {
-  background: #5C469C;
-  color: #D4ADFC;
+  background: var(--text-primary);
+  color: var(--bg-primary);
 }

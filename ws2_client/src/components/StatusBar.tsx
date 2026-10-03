@@ -18,7 +18,7 @@ interface StatusBarProps {
 function statusLabel(s: ConnectionStatus): string {
   switch (s) {
     case "disconnected": return "Disconnected";
-    case "connecting": return "Connecting…";
+    case "connecting": return "Connecting";
     case "connected": return "Connected";
     case "joined": return "Live";
   }
@@ -66,14 +66,14 @@ export function StatusBar({
 
         {captureStatus === "active" && (
           <div className="status-indicator mic-active">
-            <span className="mic-icon">🎙️</span>
+            <span className="mic-icon">[MIC]</span>
             <span className="status-text">16kHz Mic</span>
           </div>
         )}
 
         {isWakeLocked && (
           <div className="status-indicator" title="Screen Wake Lock active">
-            <span className="lock-icon">🔒</span>
+            <span className="lock-icon">[WAKELOCK]</span>
           </div>
         )}
       </div>
@@ -85,7 +85,7 @@ export function StatusBar({
             title="Real-time measured caption latency (REQ-5 target: <1.5s p95)"
             data-testid="latency-chip"
           >
-            <span className="latency-icon">⚡</span>
+            <span className="latency-icon"></span>
             <span>{latencyMs}ms</span>
             {p95LatencyMs !== undefined && (
               <span className="p95-label">p95: {p95LatencyMs}ms</span>

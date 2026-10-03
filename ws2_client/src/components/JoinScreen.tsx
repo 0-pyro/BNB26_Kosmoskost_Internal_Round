@@ -22,7 +22,7 @@ export function JoinScreen({ onJoin, isConnecting }: JoinScreenProps) {
     <div className="join-screen" data-testid="join-screen">
       <div className="join-card">
         <div className="join-logo">
-          <span className="logo-icon">🎙️</span>
+          <span className="logo-icon"></span>
           <h1 className="logo-text">Roundtable</h1>
           <p className="logo-sub">Multi-Device Live Captioning</p>
         </div>
@@ -59,7 +59,7 @@ export function JoinScreen({ onJoin, isConnecting }: JoinScreenProps) {
               className="text-link"
               onClick={() => setShowAdvanced(!showAdvanced)}
             >
-              {showAdvanced ? "▾ Hide Server URL" : "▸ Advanced: Server URL"}
+              {showAdvanced ? " Hide Server URL" : " Advanced: Server URL"}
             </button>
           </div>
 
@@ -83,7 +83,7 @@ export function JoinScreen({ onJoin, isConnecting }: JoinScreenProps) {
             disabled={!sessionId.trim() || !name.trim() || isConnecting}
             data-testid="join-btn"
           >
-            {isConnecting ? "Connecting…" : "Join Session"}
+            {isConnecting ? "Connecting" : "Join Session"}
           </button>
         </form>
       </div>
