@@ -21,7 +21,7 @@ export interface UseWebSocketReturn {
   status: ConnectionStatus;
   participantId: string | null;
   sendBinary: (data: ArrayBuffer) => void;
-  connect: () => void;
+  connect: (override?: { url?: string; sessionId?: string; participantName?: string }) => void;
   disconnect: () => void;
 }
 
@@ -63,6 +63,13 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
   const onJoinAckRef = useRef(onJoinAck);
   onJoinAckRef.current = onJoinAck;
 
+  const configRef = useRef({ url, sessionId, participantName });
+  configRef.current = {
+    url: url || configRef.current.url,
+    sessionId: sessionId || configRef.current.sessionId,
+    participantName: participantName || configRef.current.participantName,
+  };
+
   const clearReconnectTimer = useCallback(() => {
     if (reconnectTimerRef.current !== null) {
       clearTimeout(reconnectTimerRef.current);
@@ -84,27 +91,37 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
     bufferStartRef.current = null;
   }, []);
 
-  const doConnect = useCallback(() => {
+  const doConnect = useCallback((override?: { url?: string; sessionId?: string; participantName?: string }) => {
+    if (override) {
+      if (override.url) configRef.current.url = override.url;
+      if (override.sessionId) configRef.current.sessionId = override.sessionId;
+      if (override.participantName) configRef.current.participantName = override.participantName;
+    }
+
     if (wsRef.current && wsRef.current.readyState <= WebSocket.OPEN) {
       return; // already connected or connecting
     }
 
+    const targetUrl = configRef.current.url || url;
+    const targetSessionId = configRef.current.sessionId || sessionId;
+    const targetParticipantName = configRef.current.participantName || participantName;
+
     intentionalCloseRef.current = false;
     setStatus("connecting");
-    const ws = new WebSocket(url);
+    const ws = new WebSocket(targetUrl);
     ws.binaryType = "arraybuffer";
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log("[ws] Connected");
+      console.log("[ws] Connected to", targetUrl, "room:", targetSessionId, "user:", targetParticipantName);
       setStatus("connected");
       reconnectDelayRef.current = INITIAL_RECONNECT_MS;
 
       // Send JOIN
       const joinMsg: JoinRequest = {
         type: "JOIN",
-        session_id: sessionId,
-        participant_name: participantName,
+        session_id: targetSessionId,
+        participant_name: targetParticipantName,
       };
       ws.send(JSON.stringify(joinMsg));
     };

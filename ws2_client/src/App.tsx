@@ -70,15 +70,20 @@ function App() {
 
   const handleJoin = useCallback(
     async (sessionId: string, name: string, serverUrl?: string) => {
+      const targetUrl = serverUrl || DEFAULT_WS_URL;
       setSessionConfig({
-        url: serverUrl || DEFAULT_WS_URL,
+        url: targetUrl,
         sessionId,
         participantName: name,
       });
       // Start audio capture first (needs user gesture for iOS Safari)
       await audio.startCapture();
-      // Then connect WebSocket
-      ws.connect();
+      // Then connect WebSocket with credentials directly
+      ws.connect({
+        url: targetUrl,
+        sessionId,
+        participantName: name,
+      });
     },
     [audio, ws],
   );
