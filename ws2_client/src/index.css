@@ -1,5 +1,6 @@
 /* ----------------------------------------------------------------
    index.css — Global reset & design system
+   Light Theme Palette: #FFF9D2, #FFEBCC, #BFDDF0, #8CC0EB
    ---------------------------------------------------------------- */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -13,18 +14,18 @@
 }
 
 :root {
-  /* Dark theme palette */
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --surface: rgba(255, 255, 255, 0.04);
-  --surface-hover: rgba(255, 255, 255, 0.07);
-  --text-primary: rgba(255, 255, 255, 0.92);
-  --text-secondary: rgba(255, 255, 255, 0.55);
-  --accent: #8b5cf6;
-  --accent-glow: rgba(139, 92, 246, 0.25);
+  /* Target light theme palette */
+  --bg-primary: #FFF9D2;
+  --bg-secondary: #FFEBCC;
+  --surface: #FFEBCC;
+  --surface-hover: #BFDDF0;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --accent: #8CC0EB;
+  --accent-glow: rgba(140, 192, 235, 0.4);
   --danger: #ef4444;
   --success: #22c55e;
-  --border: rgba(255, 255, 255, 0.06);
+  --border: #BFDDF0;
 }
 
 html, body {
@@ -67,14 +68,14 @@ html, body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-  color: white;
-  box-shadow: 0 2px 12px rgba(139, 92, 246, 0.3);
+  background: #8CC0EB;
+  color: #0f172a;
+  box-shadow: 0 2px 12px rgba(140, 192, 235, 0.4);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #a78bfa, #7c3aed);
-  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+  background: #BFDDF0;
+  box-shadow: 0 4px 20px rgba(140, 192, 235, 0.5);
   transform: translateY(-1px);
 }
 
@@ -83,13 +84,13 @@ html, body {
 }
 
 .btn-danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: #FFEBCC;
+  color: #dc2626;
+  border: 1px solid #BFDDF0;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.25);
+  background: #BFDDF0;
 }
 
 .btn-sm {
@@ -108,17 +109,17 @@ html, body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: #BFDDF0;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: #8CC0EB;
 }
 
 /* ---- Selection ---- */
 
 ::selection {
-  background: rgba(139, 92, 246, 0.3);
-  color: white;
+  background: #BFDDF0;
+  color: #0f172a;
 }

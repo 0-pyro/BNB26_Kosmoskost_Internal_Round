@@ -1,5 +1,6 @@
 /* ----------------------------------------------------------------
    JoinScreen.css
+   Light Theme Palette: #FFF9D2, #FFEBCC, #BFDDF0, #8CC0EB
    ---------------------------------------------------------------- */
 
 .join-screen {
@@ -9,18 +10,17 @@
   min-height: 100vh;
   min-height: 100dvh;
   padding: 1.5rem;
+  background: #FFF9D2;
 }
 
 .join-card {
   width: 100%;
   max-width: 380px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #FFEBCC;
+  border: 1px solid #BFDDF0;
   border-radius: 20px;
   padding: 2.5rem 2rem;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(140, 192, 235, 0.25);
 }
 
 .join-logo {
@@ -37,16 +37,13 @@
 .logo-text {
   font-size: 1.8rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #0f172a;
   margin: 0;
 }
 
 .logo-sub {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: #64748b;
   margin: 0.25rem 0 0;
 }
 
@@ -65,29 +62,29 @@
 .field label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
+  color: #475569;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .field input {
   padding: 0.7rem 1rem;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #FFF9D2;
+  border: 1px solid #BFDDF0;
   border-radius: 10px;
-  color: #fff;
+  color: #1e293b;
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .field input:focus {
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+  border-color: #8CC0EB;
+  box-shadow: 0 0 0 3px rgba(140, 192, 235, 0.4);
 }
 
 .field input::placeholder {
-  color: rgba(255, 255, 255, 0.25);
+  color: #94a3b8;
 }
 
 .advanced-toggle {
@@ -98,7 +95,7 @@
 .text-link {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.45);
+  color: #475569;
   font-size: 0.75rem;
   cursor: pointer;
   padding: 0;
@@ -107,7 +104,7 @@
 }
 
 .text-link:hover {
-  color: #c4b5fd;
+  color: #8CC0EB;
 }
 
 .btn-join {

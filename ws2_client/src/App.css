@@ -1,5 +1,6 @@
 /* ----------------------------------------------------------------
    App.css — Main application styles
+   Light Theme Palette: #FFF9D2, #FFEBCC, #BFDDF0, #8CC0EB
    ---------------------------------------------------------------- */
 
 .app-container {
@@ -7,6 +8,7 @@
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
+  background: #FFF9D2;
 }
 
 /* ---- View toggle ---- */
@@ -16,8 +18,8 @@
   align-items: center;
   gap: 0;
   padding: 0.6rem 1rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  background: #FFEBCC;
+  border-bottom: 1px solid #BFDDF0;
   flex-shrink: 0;
 }
 
@@ -25,9 +27,9 @@
   padding: 0.4rem 1rem;
   font-size: 0.8rem;
   font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.5);
+  border: 1px solid #BFDDF0;
+  background: #FFF9D2;
+  color: #475569;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -42,12 +44,12 @@
 }
 
 .toggle-btn.active {
-  background: rgba(139, 92, 246, 0.2);
-  color: #c4b5fd;
-  border-color: rgba(139, 92, 246, 0.3);
+  background: #8CC0EB;
+  color: #0f172a;
+  border-color: #8CC0EB;
 }
 
 .toggle-btn:hover:not(.active) {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.7);
+  background: #BFDDF0;
+  color: #0f172a;
 }
