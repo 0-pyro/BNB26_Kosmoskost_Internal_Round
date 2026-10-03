@@ -98,13 +98,13 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   align-self: flex-start;
-  border: 1px solid #ffffff;
+  border: 1px solid #5C469C;
 }
 
 .timeline-text {
   font-size: 1.35rem;
   line-height: 1.4;
-  color: #ffffff;
+  color: #D4ADFC;
   text-shadow: 0 0 4px var(--accent-glow);
 }
 
@@ -151,7 +151,7 @@
   font-weight: bold;
   font-size: 1.1rem;
   flex-shrink: 0;
-  border: 2px solid #ffffff;
+  border: 2px solid #5C469C;
 }
 
 .speaker-name {
@@ -192,7 +192,7 @@
 .caption-text {
   font-size: 1.25rem;
   line-height: 1.4;
-  color: #ffffff;
+  color: #D4ADFC;
 }
 
 .partial-indicator {
