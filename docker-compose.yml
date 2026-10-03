@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  mock-server:
+    build: .
+    command: python ws4_eval/mock_server.py
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - ASR_ENGINE=mock
+
+  fault-proxy:
+    build: .
+    command: python ws4_eval/proxy.py
+    ports:
+      - "8001:8001"
+    depends_on:
+      - mock-server
