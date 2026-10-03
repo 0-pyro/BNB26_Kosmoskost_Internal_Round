@@ -7,6 +7,8 @@ interface StatusBarProps {
   captureStatus: AudioCaptureStatus;
   isWakeLocked: boolean;
   participantId: string | null;
+  roomName?: string;
+  captionCount?: number;
   onDisconnect: () => void;
   onStopCapture: () => void;
 }
@@ -34,6 +36,8 @@ export function StatusBar({
   captureStatus,
   isWakeLocked,
   participantId,
+  roomName,
+  captionCount,
   onDisconnect,
   onStopCapture,
 }: StatusBarProps) {
@@ -48,21 +52,32 @@ export function StatusBar({
           <span className="status-text">{statusLabel(connectionStatus)}</span>
         </div>
 
+        {roomName && (
+          <span className="room-badge" data-testid="room-badge">
+            Room: {roomName}
+          </span>
+        )}
+
         {captureStatus === "active" && (
           <div className="status-indicator mic-active">
             <span className="mic-icon">🎙️</span>
-            <span className="status-text">Recording</span>
+            <span className="status-text">Recording (16kHz)</span>
           </div>
         )}
 
         {isWakeLocked && (
-          <div className="status-indicator">
+          <div className="status-indicator" title="Screen Wake Lock active">
             <span className="lock-icon">🔒</span>
           </div>
         )}
       </div>
 
       <div className="status-right">
+        {captionCount !== undefined && captionCount > 0 && (
+          <span className="caption-counter" data-testid="caption-counter">
+            {captionCount} {captionCount === 1 ? "caption" : "captions"}
+          </span>
+        )}
         {participantId && (
           <span className="participant-id">{participantId}</span>
         )}

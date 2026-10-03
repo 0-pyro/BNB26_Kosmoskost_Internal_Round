@@ -90,6 +90,26 @@
   color: rgba(255, 255, 255, 0.25);
 }
 
+.advanced-toggle {
+  text-align: right;
+  margin-top: -0.5rem;
+}
+
+.text-link {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.text-link:hover {
+  color: #c4b5fd;
+}
+
 .btn-join {
   margin-top: 0.5rem;
   padding: 0.8rem;

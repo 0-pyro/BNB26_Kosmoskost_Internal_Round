@@ -2,18 +2,20 @@ import { useState } from "react";
 import "./JoinScreen.css";
 
 interface JoinScreenProps {
-  onJoin: (sessionId: string, name: string) => void;
+  onJoin: (sessionId: string, name: string, serverUrl?: string) => void;
   isConnecting: boolean;
 }
 
 export function JoinScreen({ onJoin, isConnecting }: JoinScreenProps) {
   const [sessionId, setSessionId] = useState("ROOM1");
   const [name, setName] = useState("");
+  const [serverUrl, setServerUrl] = useState("ws://localhost:8000/ws");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!sessionId.trim() || !name.trim()) return;
-    onJoin(sessionId.trim(), name.trim());
+    onJoin(sessionId.trim(), name.trim(), serverUrl.trim() || undefined);
   };
 
   return (
@@ -22,7 +24,7 @@ export function JoinScreen({ onJoin, isConnecting }: JoinScreenProps) {
         <div className="join-logo">
           <span className="logo-icon">🎙️</span>
           <h1 className="logo-text">Roundtable</h1>
-          <p className="logo-sub">Live Captioning</p>
+          <p className="logo-sub">Multi-Device Live Captioning</p>
         </div>
 
         <form className="join-form" onSubmit={handleSubmit}>
@@ -50,6 +52,30 @@ export function JoinScreen({ onJoin, isConnecting }: JoinScreenProps) {
               data-testid="name-input"
             />
           </div>
+
+          <div className="advanced-toggle">
+            <button
+              type="button"
+              className="text-link"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+            >
+              {showAdvanced ? "▾ Hide Server URL" : "▸ Advanced: Server URL"}
+            </button>
+          </div>
+
+          {showAdvanced && (
+            <div className="field">
+              <label htmlFor="server-url">WebSocket Server URL</label>
+              <input
+                id="server-url"
+                type="text"
+                value={serverUrl}
+                onChange={(e) => setServerUrl(e.target.value)}
+                placeholder="ws://localhost:8000/ws"
+                data-testid="url-input"
+              />
+            </div>
+          )}
 
           <button
             type="submit"

@@ -60,9 +60,9 @@ function App() {
   });
 
   const handleJoin = useCallback(
-    async (sessionId: string, name: string) => {
+    async (sessionId: string, name: string, serverUrl?: string) => {
       setSessionConfig({
-        url: DEFAULT_WS_URL,
+        url: serverUrl || DEFAULT_WS_URL,
         sessionId,
         participantName: name,
       });
@@ -100,6 +100,8 @@ function App() {
         captureStatus={audio.captureStatus}
         isWakeLocked={wakeLock.isLocked}
         participantId={ws.participantId}
+        roomName={sessionConfig.sessionId}
+        captionCount={timeline.length}
         onDisconnect={handleDisconnect}
         onStopCapture={audio.stopCapture}
       />

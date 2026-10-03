@@ -13,7 +13,7 @@
 |---|---|---|---|---|
 | **Single Microphone (Mic 0)** | 43.8% | 56.2% | **61.3%** | 420 ms |
 | **Naive Audio Mix (4 Mics)** | 18.8% | 50.0% | **38.8%** | 440 ms |
-| **Roundtable Multi-Device Fusion (Ours)** | 0.0% | 92.5% | **3.0%** | 384 ms |
+| **Roundtable Multi-Device Fusion (Ours)** | 0.0% | 92.5% | **3.0%** | 383 ms |
 
 ## Key Findings
 1. **Single Mic Limitation**: Distant speakers suffer from acoustic attenuation and room reverberation, leading to high SA-WER (37.5%).
