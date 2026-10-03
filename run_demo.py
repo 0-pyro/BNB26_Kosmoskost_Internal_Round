@@ -65,8 +65,11 @@ async def wait_step(prompt: str, fast: bool, delay_s: float = 3.0):
 async def main():
     parser = argparse.ArgumentParser(description="Roundtable Live Demo Orchestrator")
     parser.add_argument("--fast", action="store_true", help="Fast execution mode for quick verification")
+    parser.add_argument("--room", type=str, default="ROUNDTABLE_LIVE_DEMO", help="Session room code (use ROOM1 to watch in default web UI)")
     parser.add_argument("--port", type=int, default=8000, help="Backend server port")
     args = parser.parse_args()
+
+    session_id = args.room
 
     base_url = f"ws://localhost:{args.port}/ws"
     health_url = f"http://localhost:{args.port}/health"
@@ -108,7 +111,7 @@ async def main():
     print("\n" + "=" * 70)
     print("STAGE 2: [0:30 - 1:30] MULTI-DEVICE LIVE DEMO: 4 VIRTUAL PARTICIPANTS")
     print("=" * 70)
-    print(f"* Joining session room '{SESSION_ID}' with 4 participants: Alice, Bob, Charlie, Dana...")
+    print(f"* Joining session room '{session_id}' with 4 participants: Alice, Bob, Charlie, Dana...")
 
     speakers = [
         {"name": "Alice", "freq": 300.0, "amp": 0.8},
@@ -121,7 +124,7 @@ async def main():
 
     async def observer_task():
         async with websockets.connect(base_url) as ws:
-            await ws.send(json.dumps({"type": "JOIN", "session_id": SESSION_ID, "participant_name": "DemoObserver"}))
+            await ws.send(json.dumps({"type": "JOIN", "session_id": session_id, "participant_name": "DemoObserver"}))
             await ws.recv()
             while True:
                 try:
@@ -147,7 +150,7 @@ async def main():
 
     async def run_speaker(spk: dict, num_frames: int):
         async with websockets.connect(base_url) as ws:
-            await ws.send(json.dumps({"type": "JOIN", "session_id": SESSION_ID, "participant_name": spk["name"]}))
+            await ws.send(json.dumps({"type": "JOIN", "session_id": session_id, "participant_name": spk["name"]}))
             ack = json.loads(await ws.recv())
             spk["pid"] = ack.get("participant_id")
             for seq in range(num_frames):
