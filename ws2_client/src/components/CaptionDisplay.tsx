@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import type { CaptionEvent } from "../types";
 import type { SpeakerGroup } from "../hooks/useCaptions";
 import "./CaptionDisplay.css";
@@ -87,6 +88,37 @@ function TimelineEntry({ caption }: { caption: CaptionEvent }) {
 // ---------------------------------------------------------------------------
 
 export function CaptionDisplay({ speakerGroups, timeline, viewMode }: CaptionDisplayProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isAutoScrollActiveRef = useRef(true);
+  const [showScrollBottomBtn, setShowScrollBottomBtn] = useState(false);
+
+  // Monitor user scrolling: if user scrolls up > 60px from bottom, pause autoscroll
+  const handleScroll = () => {
+    if (!containerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 60;
+    isAutoScrollActiveRef.current = isAtBottom;
+    setShowScrollBottomBtn(!isAtBottom);
+  };
+
+  const scrollToBottom = () => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo({
+        top: containerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+      isAutoScrollActiveRef.current = true;
+      setShowScrollBottomBtn(false);
+    }
+  };
+
+  // Whenever new captions arrive or view switches, autoscroll if active
+  useEffect(() => {
+    if (isAutoScrollActiveRef.current && containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [timeline, speakerGroups, viewMode]);
+
   if (timeline.length === 0) {
     return (
       <div className="caption-display empty" data-testid="caption-display-empty">
@@ -99,7 +131,12 @@ export function CaptionDisplay({ speakerGroups, timeline, viewMode }: CaptionDis
   }
 
   return (
-    <div className="caption-display" data-testid="caption-display">
+    <div
+      className="caption-display"
+      data-testid="caption-display"
+      ref={containerRef}
+      onScroll={handleScroll}
+    >
       {viewMode === "grouped" ? (
         <div className="grouped-view">
           {speakerGroups.map((group) => (
@@ -112,6 +149,15 @@ export function CaptionDisplay({ speakerGroups, timeline, viewMode }: CaptionDis
             <TimelineEntry key={caption.segment_id} caption={caption} />
           ))}
         </div>
+      )}
+      {showScrollBottomBtn && (
+        <button
+          className="btn-scroll-bottom"
+          onClick={scrollToBottom}
+          title="Scroll to latest captions"
+        >
+          [v LATEST CAPTIONS]
+        </button>
       )}
     </div>
   );

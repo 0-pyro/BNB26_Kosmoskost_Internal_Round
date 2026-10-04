@@ -203,3 +203,30 @@
   vertical-align: middle;
   animation: retro-blink 0.8s infinite;
 }
+
+/* Floating scroll to latest button */
+.btn-scroll-bottom {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--accent);
+  color: var(--bg-primary);
+  border: 2px solid #5C469C;
+  box-shadow: 4px 4px 0px #5C469C;
+  padding: 0.5rem 1.25rem;
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  z-index: 50;
+  transition: all 0.1s ease;
+}
+
+.btn-scroll-bottom:hover {
+  background: #ffffff;
+  color: #0C134F;
+  box-shadow: 2px 2px 0px #5C469C;
+  transform: translate(2px, 2px);
+}
