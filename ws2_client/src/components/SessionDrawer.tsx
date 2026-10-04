@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { SessionDetail, SessionSummary } from "../types";
+import type { CaptionEvent, SessionDetail, SessionSummary } from "../types";
 import { AIAssistPanel } from "./AIAssistPanel";
 import "./SessionDrawer.css";
 
@@ -175,7 +175,35 @@ export function SessionDrawer({
       })
       .then((data) => {
         if (!isMounted) return;
-        setSessionDetail(data);
+        let normalized: SessionDetail;
+        if (Array.isArray(data)) {
+          const events: CaptionEvent[] = data;
+          const speakerSet = new Set<string>();
+          events.forEach((ev) => {
+            const name = ev.speaker_name || ev.speaker_id;
+            if (name) speakerSet.add(name);
+          });
+          const participants = Array.from(speakerSet).map((name) => ({
+            id: name,
+            name,
+            connection_state: "DISCONNECTED",
+          }));
+          const startTime = events[0]?.start_ts || Date.now();
+          normalized = {
+            session_id: selectedSessionId,
+            start_time: startTime,
+            participants,
+            timeline: events,
+          };
+        } else {
+          normalized = {
+            session_id: data.session_id || selectedSessionId,
+            start_time: data.start_time || data.timestamp || data.created_at || Date.now(),
+            participants: data.participants || [],
+            timeline: data.timeline || data.transcript || [],
+          };
+        }
+        setSessionDetail(normalized);
       })
       .catch(() => {
         // Fallback to mock session detail
@@ -282,22 +310,22 @@ export function SessionDrawer({
                     <div className="transcript-log-title">
                       &gt; ARCHIVED TRANSCRIPT TIMELINE
                     </div>
-                    {sessionDetail.timeline?.length === 0 ? (
+                    {!sessionDetail.timeline || sessionDetail.timeline.length === 0 ? (
                       <div className="hud-empty-state">
                         No transcript recorded for this session.
                       </div>
                     ) : (
-                      sessionDetail.timeline.map((item) => (
+                      sessionDetail.timeline.map((item, idx) => (
                         <div
-                          key={item.segment_id}
+                          key={item.segment_id || `seg-${idx}`}
                           className="transcript-entry"
-                          data-testid={`transcript-entry-${item.segment_id}`}
+                          data-testid={`transcript-entry-${item.segment_id || idx}`}
                         >
                           <div className="transcript-entry-meta">
                             <span className="transcript-speaker">
-                              [{item.speaker_name || item.speaker_id}]
+                              [{item.speaker_name || item.speaker_id || "Speaker"}]
                             </span>
-                            <span>{formatOffset(item.start_ts)}</span>
+                            <span>{formatOffset(item.start_ts || 0)}</span>
                           </div>
                           <div className="transcript-text">{item.text}</div>
                         </div>
@@ -331,6 +359,8 @@ export function SessionDrawer({
                       typeof p === "string" ? p : p.name || p.id
                     )
                   : [];
+                const sessTime = sess.start_time || (sess as any).timestamp || (sess as any).created_at || 0;
+                const count = sess.caption_count ?? (sess as any).transcript_count ?? 0;
 
                 return (
                   <div
@@ -347,7 +377,7 @@ export function SessionDrawer({
                     <div className="session-card-header">
                       <span className="session-card-title">{sess.session_id}</span>
                       <span className="session-card-time">
-                        {formatTimestamp(sess.start_time)}
+                        {formatTimestamp(sessTime)}
                       </span>
                     </div>
 
@@ -360,7 +390,7 @@ export function SessionDrawer({
                     </div>
 
                     <div className="session-card-footer">
-                      <span>{sess.caption_count ?? 0} captions</span>
+                      <span>{count} captions</span>
                       <span className="btn btn-sm btn-primary">
                         [INSPECT &amp; AI ASSIST]
                       </span>
