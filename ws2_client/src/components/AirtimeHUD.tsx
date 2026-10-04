@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import type { CaptionEvent, SpeakerAirtime } from "../types";
+import { formatCaptionTimestamp } from "./CaptionDisplay";
 import "./AirtimeHUD.css";
 
 export interface AirtimeHUDProps {
@@ -26,6 +27,7 @@ export function computeSpeakerAirtime(timeline: CaptionEvent[]): {
       wordCount: number;
       charCount: number;
       finalSegmentCount: number;
+      lastTimestamp?: number;
     }
   >();
 
@@ -41,6 +43,7 @@ export function computeSpeakerAirtime(timeline: CaptionEvent[]): {
     totalChars += chars;
 
     const existing = statsMap.get(seg.speaker_id);
+    const segTs = seg.end_ts || seg.start_ts;
     if (!existing) {
       statsMap.set(seg.speaker_id, {
         speakerId: seg.speaker_id,
@@ -48,6 +51,7 @@ export function computeSpeakerAirtime(timeline: CaptionEvent[]): {
         wordCount: words,
         charCount: chars,
         finalSegmentCount: 1,
+        lastTimestamp: segTs,
       });
     } else {
       if (seg.speaker_name) {
@@ -56,6 +60,9 @@ export function computeSpeakerAirtime(timeline: CaptionEvent[]): {
       existing.wordCount += words;
       existing.charCount += chars;
       existing.finalSegmentCount += 1;
+      if (segTs && segTs > (existing.lastTimestamp || 0)) {
+        existing.lastTimestamp = segTs;
+      }
     }
   }
 
@@ -161,6 +168,7 @@ export function AirtimeHUD({
                   [{speaker.speakerName}]
                 </span>
                 <span className="speaker-numbers">
+                  {speaker.lastTimestamp ? `[${formatCaptionTimestamp(speaker.lastTimestamp)}] ` : ""}
                   {speaker.wordCount}w ({speaker.percentage}%)
                 </span>
               </div>

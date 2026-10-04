@@ -98,6 +98,7 @@ export interface SpeakerAirtime {
   charCount: number;
   finalSegmentCount: number;
   percentage: number;
+  lastTimestamp?: number;
 }
 
 // ---------------------------------------------------------------------------
