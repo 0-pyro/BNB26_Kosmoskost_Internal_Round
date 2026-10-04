@@ -32,6 +32,26 @@ describe("StatusBar component", () => {
     fireEvent.click(screen.getByTestId("leave-btn"));
     expect(onDisconnect).toHaveBeenCalledTimes(1);
   });
+
+  it("renders and handles onOpenDrawer in StatusBar", () => {
+    const onOpenDrawer = vi.fn();
+    render(
+      <StatusBar
+        connectionStatus="joined"
+        captureStatus="idle"
+        isWakeLocked={false}
+        participantId="p1"
+        onDisconnect={vi.fn()}
+        onStopCapture={vi.fn()}
+        onOpenDrawer={onOpenDrawer}
+      />
+    );
+
+    const btn = screen.getByTestId("open-drawer-btn");
+    expect(btn).toBeDefined();
+    fireEvent.click(btn);
+    expect(onOpenDrawer).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("JoinScreen component", () => {
@@ -58,4 +78,15 @@ describe("JoinScreen component", () => {
 
     expect(onJoin).toHaveBeenCalledWith("DEMO_ROOM", "Bob", "ws://127.0.0.1:8000/ws");
   });
+
+  it("renders and handles past sessions button in JoinScreen", () => {
+    const onOpenDrawer = vi.fn();
+    render(<JoinScreen onJoin={vi.fn()} isConnecting={false} onOpenDrawer={onOpenDrawer} />);
+
+    const btn = screen.getByTestId("join-archive-btn");
+    expect(btn).toBeDefined();
+    fireEvent.click(btn);
+    expect(onOpenDrawer).toHaveBeenCalledTimes(1);
+  });
 });
+

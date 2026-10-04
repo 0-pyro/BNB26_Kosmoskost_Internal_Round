@@ -13,6 +13,7 @@ interface StatusBarProps {
   p95LatencyMs?: number;
   onDisconnect: () => void;
   onStopCapture: () => void;
+  onOpenDrawer?: () => void;
 }
 
 function statusLabel(s: ConnectionStatus): string {
@@ -44,6 +45,7 @@ export function StatusBar({
   p95LatencyMs,
   onDisconnect,
   onStopCapture,
+  onOpenDrawer,
 }: StatusBarProps) {
   const isLatencyGood = p95LatencyMs !== undefined && p95LatencyMs < 1500;
 
@@ -100,6 +102,16 @@ export function StatusBar({
         )}
         {participantId && (
           <span className="participant-id">{participantId}</span>
+        )}
+        {onOpenDrawer && (
+          <button
+            className="btn btn-sm"
+            onClick={onOpenDrawer}
+            data-testid="open-drawer-btn"
+            title="Open Past Session Archives"
+          >
+            Archives
+          </button>
         )}
         {connectionStatus === "joined" && (
           <button
