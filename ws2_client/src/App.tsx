@@ -9,8 +9,10 @@ import { useWebSocket } from "./hooks/useWebSocket";
 import type { CaptionEvent, JoinAck } from "./types";
 import "./App.css";
 
-// Default WebSocket URL (mock server)
-const DEFAULT_WS_URL = "ws://localhost:8000";
+// Default WebSocket URL (dynamically resolves to hostname so mobile phones connect seamlessly)
+const DEFAULT_WS_URL = typeof window !== "undefined"
+  ? `ws://${window.location.hostname || "localhost"}:8000/ws`
+  : "ws://localhost:8000/ws";
 
 type ViewMode = "grouped" | "timeline";
 

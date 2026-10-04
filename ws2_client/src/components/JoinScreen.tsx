@@ -9,7 +9,9 @@ interface JoinScreenProps {
 export function JoinScreen({ onJoin, isConnecting }: JoinScreenProps) {
   const [sessionId, setSessionId] = useState("ROOM1");
   const [name, setName] = useState("");
-  const [serverUrl, setServerUrl] = useState("ws://localhost:8000/ws");
+  const [serverUrl, setServerUrl] = useState(() => 
+    typeof window !== "undefined" ? `ws://${window.location.hostname || "localhost"}:8000/ws` : "ws://localhost:8000/ws"
+  );
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
