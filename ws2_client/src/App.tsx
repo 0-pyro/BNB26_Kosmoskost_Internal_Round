@@ -9,10 +9,16 @@ import { useWebSocket } from "./hooks/useWebSocket";
 import type { CaptionEvent, JoinAck } from "./types";
 import "./App.css";
 
-// Default WebSocket URL (dynamically resolves to hostname so mobile phones connect seamlessly)
-const DEFAULT_WS_URL = typeof window !== "undefined"
-  ? `ws://${window.location.hostname || "localhost"}:8000/ws`
-  : "ws://localhost:8000/ws";
+// Dynamic WebSocket URL: uses wss: over HTTPS tunnels and ws: over local/LAN
+function getDefaultWsUrl(): string {
+  if (typeof window === "undefined") return "ws://localhost:8000/ws";
+  const isHttps = window.location.protocol === "https:";
+  const proto = isHttps ? "wss:" : "ws:";
+  const port = isHttps ? "" : (window.location.port === "8000" ? ":8000" : ":8000");
+  return `${proto}//${window.location.hostname}${port}/ws`;
+}
+
+const DEFAULT_WS_URL = getDefaultWsUrl();
 
 type ViewMode = "grouped" | "timeline";
 

@@ -413,6 +413,13 @@ async def websocket_root(websocket: WebSocket):
     await _handle_websocket_connection(websocket)
 
 
+# Mount pre-built frontend bundle so UI and WebSockets are served from a single port
+client_dist = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ws2_client", "dist")
+if os.path.exists(client_dist):
+    from fastapi.staticfiles import StaticFiles
+    app.mount("/", StaticFiles(directory=client_dist, html=True), name="static")
+
+
 def run(host: str = "0.0.0.0", port: int = 8000) -> None:
     """Run the FastAPI application with Uvicorn."""
     uvicorn.run(app, host=host, port=port)
