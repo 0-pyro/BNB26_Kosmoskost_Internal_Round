@@ -263,7 +263,9 @@ class Room:
                     caption.speaker_name or caption.speaker_id,
                     query,
                 )
-                task = asyncio.create_task(self.handle_voice_copilot(query))
+                task = asyncio.create_task(
+                    self.handle_voice_copilot(query, trigger_caption=caption)
+                )
                 self.copilot_tasks = [t for t in self.copilot_tasks if not t.done()]
                 self.copilot_tasks.append(task)
                 # Do NOT broadcast this segment as a normal user caption
@@ -275,10 +277,22 @@ class Room:
         if broadcast:
             await self.broadcast(caption)
 
-    async def handle_voice_copilot(self, query: str) -> Optional[CaptionEvent]:
+    async def handle_voice_copilot(
+        self,
+        query: str,
+        client: Optional[Any] = None,
+        model: Optional[str] = None,
+        trigger_caption: Optional[CaptionEvent] = None,
+    ) -> Optional[CaptionEvent]:
         """Trigger Voice Copilot handling for this room."""
         from ws1_backend.copilot import handle_voice_copilot
-        return await handle_voice_copilot(self, query)
+        return await handle_voice_copilot(
+            self,
+            query,
+            client=client,
+            model=model,
+            trigger_caption=trigger_caption,
+        )
 
     async def broadcast(
         self,
