@@ -5,6 +5,10 @@ import { defineConfig } from 'vitest/config'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    host: true,
+    allowedHosts: true,
+  },
   test: {
     globals: true,
     environment: 'jsdom',
