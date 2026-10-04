@@ -124,4 +124,51 @@ describe("CaptionDisplay", () => {
     expect(screen.getByTestId("caption-seg_1")).toBeInTheDocument();
     expect(screen.getByTestId("caption-seg_2")).toBeInTheDocument();
   });
+
+  it("renders timestamps for each and every speaker in timeline and grouped views", () => {
+    const captions = [
+      makeCaption({
+        segment_id: "seg_10",
+        speaker_id: "p_alice",
+        speaker_name: "Alice",
+        start_ts: 65000, // 01:05
+        text: "I am speaking at 1 minute 5 seconds",
+      }),
+      makeCaption({
+        segment_id: "seg_20",
+        speaker_id: "p_bob",
+        speaker_name: "Bob",
+        start_ts: 125000, // 02:05
+        text: "Bob responding at 2 minutes 5 seconds",
+      }),
+    ];
+
+    // 1. Timeline view check
+    const { rerender } = render(
+      <CaptionDisplay
+        speakerGroups={makeGroups(captions)}
+        timeline={captions}
+        viewMode="timeline"
+      />
+    );
+
+    const time1 = screen.getByTestId("timestamp-seg_10");
+    const time2 = screen.getByTestId("timestamp-seg_20");
+    expect(time1.textContent).toContain("01:05");
+    expect(time2.textContent).toContain("02:05");
+
+    // 2. Grouped view check
+    rerender(
+      <CaptionDisplay
+        speakerGroups={makeGroups(captions)}
+        timeline={captions}
+        viewMode="grouped"
+      />
+    );
+
+    expect(screen.getByTestId("speaker-time-p_alice").textContent).toContain("01:05");
+    expect(screen.getByTestId("speaker-time-p_bob").textContent).toContain("02:05");
+    expect(screen.getByTestId("bubble-time-seg_10").textContent).toContain("01:05");
+    expect(screen.getByTestId("bubble-time-seg_20").textContent).toContain("02:05");
+  });
 });

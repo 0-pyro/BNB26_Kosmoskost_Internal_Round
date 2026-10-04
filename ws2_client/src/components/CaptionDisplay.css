@@ -89,6 +89,13 @@
   flex: 1;
 }
 
+.timeline-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
 .timeline-speaker {
   font-size: 1.1rem;
   font-weight: normal;
@@ -99,6 +106,13 @@
   letter-spacing: 1px;
   align-self: flex-start;
   border: 1px solid #5C469C;
+}
+
+.timeline-timestamp {
+  font-size: 0.95rem;
+  color: var(--accent);
+  opacity: 0.9;
+  letter-spacing: 0.05em;
 }
 
 .timeline-text {
@@ -161,6 +175,14 @@
   letter-spacing: 1px;
 }
 
+.speaker-last-active {
+  font-size: 0.95rem;
+  color: var(--accent);
+  opacity: 0.85;
+  margin-left: auto;
+  letter-spacing: 0.05em;
+}
+
 .speaker-captions {
   display: flex;
   flex-direction: column;
@@ -178,6 +200,21 @@
   border-left: 3px solid var(--accent);
   border-radius: 0;
   transition: opacity 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.caption-bubble-meta {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.caption-timestamp {
+  font-size: 0.85rem;
+  color: var(--accent);
+  opacity: 0.8;
+  letter-spacing: 0.05em;
 }
 
 .caption-bubble.partial {

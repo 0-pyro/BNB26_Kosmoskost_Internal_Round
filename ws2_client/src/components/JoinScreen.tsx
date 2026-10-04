@@ -4,9 +4,10 @@ import "./JoinScreen.css";
 interface JoinScreenProps {
   onJoin: (sessionId: string, name: string, serverUrl?: string) => void;
   isConnecting: boolean;
+  onOpenDrawer?: () => void;
 }
 
-export function JoinScreen({ onJoin, isConnecting }: JoinScreenProps) {
+export function JoinScreen({ onJoin, isConnecting, onOpenDrawer }: JoinScreenProps) {
   const [sessionId, setSessionId] = useState("ROOM1");
   const [name, setName] = useState("");
   const [serverUrl, setServerUrl] = useState(() => {
@@ -91,6 +92,18 @@ export function JoinScreen({ onJoin, isConnecting }: JoinScreenProps) {
           >
             {isConnecting ? "Connecting" : "Join Session"}
           </button>
+
+          {onOpenDrawer && (
+            <button
+              type="button"
+              className="btn btn-secondary btn-archive-drawer"
+              onClick={onOpenDrawer}
+              data-testid="join-archive-btn"
+              style={{ marginTop: "0.75rem", width: "100%" }}
+            >
+              [ARCHIVE] Past Sessions &amp; AI Assist
+            </button>
+          )}
         </form>
       </div>
     </div>

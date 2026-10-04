@@ -1,0 +1,185 @@
+/* ----------------------------------------------------------------
+   AIAssistPanel.css - Retro Cyber AI Intelligence Panel
+   Palette: #0C134F, #1D267D, #5C469C, #D4ADFC
+   ---------------------------------------------------------------- */
+
+.ai-assist-panel {
+  background: var(--bg-primary);
+  border: 2px solid var(--border);
+  box-shadow: 4px 4px 0px #5C469C;
+  padding: 0.85rem;
+  margin-bottom: 1rem;
+  font-family: inherit;
+  color: var(--text-primary);
+}
+
+.ai-assist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px dashed var(--surface-hover);
+  padding-bottom: 0.4rem;
+}
+
+.ai-assist-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.ai-badge {
+  background: var(--surface-hover);
+  color: #D4ADFC;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.85rem;
+  border: 1px solid var(--border);
+}
+
+.ai-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+  align-items: center;
+}
+
+.ai-btn {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  box-shadow: 3px 3px 0px #5C469C;
+  color: var(--text-primary);
+  padding: 0.35rem 0.9rem;
+  font-family: inherit;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.1s ease;
+}
+
+.ai-btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: #ffffff;
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px #5C469C;
+}
+
+.ai-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ai-btn-primary {
+  background: #5C469C;
+  color: #D4ADFC;
+}
+
+.ai-lang-select {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.3rem 0.5rem;
+  outline: none;
+}
+
+.ai-custom-query-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.ai-custom-query-input {
+  flex: 1;
+  background: #0C134F;
+  border: 2px solid var(--border);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.4rem 0.7rem;
+  outline: none;
+  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.4);
+}
+
+.ai-custom-query-input::placeholder {
+  color: rgba(212, 173, 252, 0.5);
+}
+
+.ai-custom-query-input:focus {
+  border-color: #ffffff;
+  box-shadow: 0 0 6px var(--accent-glow);
+}
+
+.ai-loading-state {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  background: rgba(92, 70, 156, 0.2);
+  border: 1px dashed var(--border);
+  color: var(--accent);
+  font-size: 1rem;
+  animation: pulse-glow 1.5s infinite ease-in-out;
+}
+
+.ai-loading-spinner {
+  display: inline-block;
+  animation: retro-spin 1s infinite linear;
+}
+
+@keyframes retro-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.ai-response-box {
+  background: #0C134F;
+  border: 2px solid var(--border);
+  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.6);
+  padding: 0.75rem;
+  position: relative;
+  margin-top: 0.5rem;
+}
+
+.ai-response-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--surface-hover);
+  padding-bottom: 0.3rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.ai-response-content {
+  font-size: 1rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.ai-clear-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 0.1rem 0.3rem;
+  cursor: pointer;
+}
+
+.ai-clear-btn:hover {
+  background: var(--surface-hover);
+}

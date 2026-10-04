@@ -15,16 +15,58 @@ interface CaptionDisplayProps {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+export function formatCaptionTimestamp(ts?: number): string {
+  if (ts === undefined || ts === null || isNaN(ts) || ts <= 0) {
+    return "00:00";
+  }
+  if (ts > 1_000_000_000_000) {
+    const d = new Date(ts);
+    return d.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+  }
+  if (ts > 1_000_000_000) {
+    const d = new Date(ts * 1000);
+    return d.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+  }
+  const totalSeconds = Math.max(0, Math.floor(ts / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+}
+
+// ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
 
 function CaptionBubble({ caption }: { caption: CaptionEvent }) {
+  const tsStr = formatCaptionTimestamp(caption.start_ts || caption.end_ts);
+
   return (
     <div
       className={`caption-bubble ${caption.is_final ? "final" : "partial"}`}
       data-segment-id={caption.segment_id}
       data-testid={`caption-${caption.segment_id}`}
     >
+      <div className="caption-bubble-meta">
+        <span
+          className="caption-timestamp"
+          data-testid={`bubble-time-${caption.segment_id}`}
+        >
+          [{tsStr}]
+        </span>
+      </div>
       <span className="caption-text">{caption.text}</span>
       {!caption.is_final && <span className="partial-indicator">●</span>}
     </div>
@@ -38,6 +80,11 @@ function SpeakerSection({ group }: { group: SpeakerGroup }) {
     hue = (hue * 31 + group.speakerId.charCodeAt(i)) % 360;
   }
 
+  const latestSegment = group.segments[group.segments.length - 1];
+  const lastActiveTs = latestSegment
+    ? formatCaptionTimestamp(latestSegment.start_ts || latestSegment.end_ts)
+    : "";
+
   return (
     <div className="speaker-section" data-testid={`speaker-${group.speakerId}`}>
       <div className="speaker-header">
@@ -48,6 +95,14 @@ function SpeakerSection({ group }: { group: SpeakerGroup }) {
           {group.speakerName.charAt(0).toUpperCase()}
         </div>
         <span className="speaker-name">{group.speakerName}</span>
+        {lastActiveTs && (
+          <span
+            className="speaker-last-active"
+            data-testid={`speaker-time-${group.speakerId}`}
+          >
+            [{lastActiveTs}]
+          </span>
+        )}
       </div>
       <div className="speaker-captions">
         {group.segments.map((caption) => (
@@ -64,6 +119,8 @@ function TimelineEntry({ caption }: { caption: CaptionEvent }) {
     hue = (hue * 31 + caption.speaker_id.charCodeAt(i)) % 360;
   }
 
+  const tsStr = formatCaptionTimestamp(caption.start_ts || caption.end_ts);
+
   return (
     <div
       className={`timeline-entry ${caption.is_final ? "final" : "partial"}`}
@@ -74,9 +131,17 @@ function TimelineEntry({ caption }: { caption: CaptionEvent }) {
         style={{ backgroundColor: `hsl(${hue}, 65%, 55%)` }}
       />
       <div className="timeline-content">
-        <span className="timeline-speaker">
-          {caption.speaker_name || caption.speaker_id}
-        </span>
+        <div className="timeline-header">
+          <span className="timeline-speaker">
+            {caption.speaker_name || caption.speaker_id}
+          </span>
+          <span
+            className="timeline-timestamp"
+            data-testid={`timestamp-${caption.segment_id}`}
+          >
+            [{tsStr}]
+          </span>
+        </div>
         <span className="timeline-text">{caption.text}</span>
       </div>
     </div>

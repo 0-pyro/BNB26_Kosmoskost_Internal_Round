@@ -60,6 +60,49 @@ export interface TimeSyncResponse {
 export type ServerMessage = CaptionEvent | JoinAck | TimeSyncResponse;
 
 // ---------------------------------------------------------------------------
+// Session Archive & REST API Types
+// ---------------------------------------------------------------------------
+
+export interface SessionSummary {
+  session_id: string;
+  start_time: number;
+  participants: (string | { id: string; name: string })[];
+  caption_count?: number;
+  duration_sec?: number;
+}
+
+export interface SessionDetail {
+  session_id: string;
+  start_time: number;
+  participants: { id: string; name: string; connection_state?: string }[];
+  timeline: CaptionEvent[];
+}
+
+export interface AIAssistRequest {
+  session_id: string;
+  action?: "summarize" | "translate" | "query";
+  query?: string;
+  target_lang?: string;
+  transcript_text?: string;
+}
+
+export interface AIAssistResponse {
+  session_id?: string;
+  result: string;
+  action?: string;
+}
+
+export interface SpeakerAirtime {
+  speakerId: string;
+  speakerName: string;
+  wordCount: number;
+  charCount: number;
+  finalSegmentCount: number;
+  percentage: number;
+  lastTimestamp?: number;
+}
+
+// ---------------------------------------------------------------------------
 // Binary Audio Frame constants
 // ---------------------------------------------------------------------------
 

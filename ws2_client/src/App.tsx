@@ -1,6 +1,8 @@
 import { useCallback, useState } from "react";
+import { AirtimeHUD } from "./components/AirtimeHUD";
 import { CaptionDisplay } from "./components/CaptionDisplay";
 import { JoinScreen } from "./components/JoinScreen";
+import { SessionDrawer } from "./components/SessionDrawer";
 import { StatusBar } from "./components/StatusBar";
 import { useAudioCapture } from "./hooks/useAudioCapture";
 import { useCaptions } from "./hooks/useCaptions";
@@ -30,6 +32,7 @@ function App() {
   } | null>(null);
 
   const [viewMode, setViewMode] = useState<ViewMode>("timeline");
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const { speakerGroups, timeline, handleCaption, loadHistory, clearCaptions } =
     useCaptions();
@@ -113,10 +116,17 @@ function App() {
   // Show join screen if no session config
   if (!sessionConfig) {
     return (
-      <JoinScreen
-        onJoin={handleJoin}
-        isConnecting={ws.status === "connecting"}
-      />
+      <>
+        <JoinScreen
+          onJoin={handleJoin}
+          isConnecting={ws.status === "connecting"}
+          onOpenDrawer={() => setIsDrawerOpen(true)}
+        />
+        <SessionDrawer
+          isOpen={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+        />
+      </>
     );
   }
 
@@ -134,6 +144,7 @@ function App() {
         p95LatencyMs={p95Latency}
         onDisconnect={handleDisconnect}
         onStopCapture={audio.stopCapture}
+        onOpenDrawer={() => setIsDrawerOpen(true)}
       />
 
       <div className="view-toggle">
@@ -157,6 +168,13 @@ function App() {
         speakerGroups={speakerGroups}
         timeline={timeline}
         viewMode={viewMode}
+      />
+
+      <AirtimeHUD timeline={timeline} />
+
+      <SessionDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
       />
     </div>
   );
