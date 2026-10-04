@@ -41,3 +41,9 @@ Thumbs.db
 .pytest_cache/
 htmlcov/
 .coverage
+
+# Database & local binaries
+*.db
+ws1_backend/data/*.db
+cloudflared.exe
+
