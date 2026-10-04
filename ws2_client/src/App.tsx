@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { AirtimeHUD } from "./components/AirtimeHUD";
 import { CaptionDisplay } from "./components/CaptionDisplay";
 import { JoinScreen } from "./components/JoinScreen";
 import { StatusBar } from "./components/StatusBar";
@@ -158,6 +159,8 @@ function App() {
         timeline={timeline}
         viewMode={viewMode}
       />
+
+      <AirtimeHUD timeline={timeline} />
     </div>
   );
 }

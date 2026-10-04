@@ -1,0 +1,177 @@
+/* ----------------------------------------------------------------
+   AirtimeHUD.css - Retro Terminal Style Airtime Monitor
+   Palette: #0C134F, #1D267D, #5C469C, #D4ADFC
+   ---------------------------------------------------------------- */
+
+.airtime-hud {
+  background: var(--bg-primary);
+  border: 2px solid var(--border);
+  box-shadow: 4px 4px 0px #5C469C;
+  font-family: inherit;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  z-index: 30;
+  max-width: 380px;
+  width: 100%;
+}
+
+.airtime-hud.docked {
+  position: absolute;
+  top: 70px;
+  right: 1rem;
+}
+
+.airtime-hud-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0.75rem;
+  background: var(--bg-secondary);
+  border-bottom: 2px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+}
+
+.hud-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.hud-pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+  animation: pulse-glow 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.hud-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.1rem 0.4rem;
+  cursor: pointer;
+}
+
+.hud-btn:hover {
+  background: var(--surface-hover);
+}
+
+.airtime-hud-body {
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.hud-stats-summary {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+  opacity: 0.85;
+  border-bottom: 1px dashed var(--surface-hover);
+  padding-bottom: 0.4rem;
+}
+
+.hud-empty-state {
+  text-align: center;
+  padding: 0.8rem 0.4rem;
+  font-size: 0.95rem;
+  opacity: 0.7;
+}
+
+.speaker-airtime-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.speaker-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 1rem;
+}
+
+.speaker-label {
+  font-weight: bold;
+  color: var(--accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+.speaker-numbers {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.airtime-bar-track {
+  height: 14px;
+  background: #0C134F;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.airtime-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5C469C 0%, #D4ADFC 100%);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.airtime-bar-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 4px,
+    rgba(12, 19, 79, 0.4) 4px,
+    rgba(12, 19, 79, 0.4) 6px
+  );
+}
+
+.airtime-hud-collapsed {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.75rem;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  box-shadow: 3px 3px 0px #5C469C;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+  z-index: 30;
+}
+
+.airtime-hud-collapsed:hover {
+  background: var(--surface-hover);
+}
