@@ -20,6 +20,7 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import uvicorn
 
 # Ensure project root is on sys.path for contracts import
@@ -220,6 +221,124 @@ async def get_session_transcript_endpoint(session_id: str):
         return active_room.get_history()
 
     raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
+
+
+GROQ_ASSIST_MODEL = os.environ.get("GROQ_ASSIST_MODEL", "qwen/qwen3.8-27b")
+
+
+class AIAssistRequest(BaseModel):
+    session_id: str
+    query_type: str
+    query: Optional[str] = None
+    target_language: Optional[str] = None
+
+
+class AIAssistResponse(BaseModel):
+    response: str
+    result: Optional[str] = None
+
+
+def get_groq_client(api_key: Optional[str] = None) -> Any:
+    """Get AsyncGroq client instance."""
+    key = api_key or os.environ.get("GROQ_API_KEY")
+    if not key:
+        raise ValueError("GROQ_API_KEY is not configured")
+    from groq import AsyncGroq
+    return AsyncGroq(api_key=key)
+
+
+async def query_groq_llm(
+    prompt: str,
+    system_prompt: str = "You are a helpful assistant.",
+    model: str = GROQ_ASSIST_MODEL,
+    api_key: Optional[str] = None,
+) -> str:
+    """Send chat completion prompt to Groq LLM model."""
+    client = get_groq_client(api_key=api_key)
+    completion = await client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.3,
+    )
+    return completion.choices[0].message.content or ""
+
+
+@app.post("/api/ai/assist", response_model=AIAssistResponse)
+async def ai_assist_endpoint(req: AIAssistRequest):
+    """
+    Post-Meeting AI Assist endpoint powered by qwen/qwen3.8-27b via Groq.
+    Supports 'summary', 'translation', and 'custom' query types.
+    """
+    transcript = session_storage.get_session_transcript(req.session_id)
+    if transcript is None:
+        # Fallback to active room if room is currently active in memory
+        active_room = await session_manager.get_room(req.session_id)
+        if active_room is not None:
+            transcript = active_room.get_history()
+
+    if transcript is None:
+        raise HTTPException(status_code=404, detail=f"Session '{req.session_id}' not found")
+
+    if not transcript:
+        return AIAssistResponse(
+            response="No transcript available for this session.",
+            result="No transcript available for this session.",
+        )
+
+    # Format transcript using finalized events if available
+    finals = [ev for ev in transcript if getattr(ev, "is_final", False)]
+    events = finals if finals else transcript
+    formatted_lines = [
+        f"{ev.speaker_name or ev.speaker_id or 'Speaker'}: {ev.text}"
+        for ev in events
+    ]
+    formatted_transcript = "\n".join(formatted_lines)
+
+    q_type = req.query_type.lower().strip()
+    if q_type in ("summary", "summarize"):
+        system_prompt = (
+            "You are an expert meeting assistant. Provide a concise, clear summary "
+            "of the following meeting transcript, including key discussion points and action items."
+        )
+        user_prompt = f"Please summarize the following meeting transcript:\n\n{formatted_transcript}"
+    elif q_type in ("translation", "translate"):
+        target_lang = (req.target_language or "Spanish").strip()
+        system_prompt = (
+            f"You are a professional translator. Translate the following meeting transcript into {target_lang}. "
+            f"Preserve speaker names and conversation structure."
+        )
+        user_prompt = f"Please translate this meeting transcript into {target_lang}:\n\n{formatted_transcript}"
+    elif q_type in ("custom", "qa", "question"):
+        query = (req.query or "What was discussed in this meeting?").strip()
+        system_prompt = (
+            "You are an intelligent meeting assistant. Answer the user's question accurately "
+            "based on the provided meeting transcript."
+        )
+        user_prompt = f"Question: {query}\n\nMeeting Transcript:\n{formatted_transcript}"
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid query_type '{req.query_type}'. Expected 'summary', 'translation', or 'custom'.",
+        )
+
+    try:
+        llm_response = await query_groq_llm(
+            prompt=user_prompt,
+            system_prompt=system_prompt,
+            model=GROQ_ASSIST_MODEL,
+        )
+    except ValueError as exc:
+        logger.error("Groq configuration error: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        logger.error("Groq AI assist call failed: %s", exc)
+        raise HTTPException(status_code=500, detail=f"Failed to query Groq AI model: {exc}")
+
+    return AIAssistResponse(response=llm_response, result=llm_response)
+
 
 
 

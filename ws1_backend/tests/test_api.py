@@ -7,6 +7,7 @@ Unit tests for ws1_backend REST APIs:
 
 from __future__ import annotations
 
+from unittest.mock import AsyncMock, MagicMock
 import pytest
 import pytest_asyncio
 import httpx
@@ -32,6 +33,25 @@ async def client():
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as ac:
         yield ac
+
+
+@pytest.fixture()
+def mock_groq(monkeypatch):
+    """Mock the Groq client and capture chat completion arguments."""
+    calls = []
+    mock_client = AsyncMock()
+
+    async def fake_create(**kwargs):
+        calls.append(kwargs)
+        mock_completion = MagicMock()
+        mock_choice = MagicMock()
+        mock_choice.message.content = "Mocked LLM Response for: " + kwargs.get("model", "")
+        mock_completion.choices = [mock_choice]
+        return mock_completion
+
+    mock_client.chat.completions.create = AsyncMock(side_effect=fake_create)
+    monkeypatch.setattr("ws1_backend.main.get_groq_client", lambda **kwargs: mock_client)
+    return calls
 
 
 @pytest.mark.asyncio
@@ -124,3 +144,165 @@ async def test_get_session_transcript_fallback_to_active_room(client: httpx.Asyn
     transcript = response.json()
     assert len(transcript) == 1
     assert transcript[0]["text"] == "Live in memory"
+
+
+@pytest.mark.asyncio
+async def test_ai_assist_summary(client: httpx.AsyncClient, mock_groq: list):
+    ev1 = CaptionEvent(
+        segment_id="s1",
+        speaker_id="p1",
+        speaker_name="Alice",
+        text="Let's finalize the roadmap.",
+        is_final=True,
+    )
+    ev2 = CaptionEvent(
+        segment_id="s2",
+        speaker_id="p2",
+        speaker_name="Bob",
+        text="Agreed, we ship v1 next Friday.",
+        is_final=True,
+    )
+    session_storage.save_session("session_meeting", [ev1, ev2])
+
+    payload = {
+        "session_id": "session_meeting",
+        "query_type": "summary",
+    }
+    response = await client.post("/api/ai/assist", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "Mocked LLM Response for: qwen/qwen3.8-27b" in data["response"]
+    assert data["result"] == data["response"]
+
+    # Verify Groq LLM invocation parameters
+    assert len(mock_groq) == 1
+    assert mock_groq[0]["model"] == "qwen/qwen3.8-27b"
+    user_prompt = mock_groq[0]["messages"][1]["content"]
+    assert "Alice: Let's finalize the roadmap." in user_prompt
+    assert "Bob: Agreed, we ship v1 next Friday." in user_prompt
+
+
+@pytest.mark.asyncio
+async def test_ai_assist_translation(client: httpx.AsyncClient, mock_groq: list):
+    ev = CaptionEvent(
+        segment_id="s1",
+        speaker_id="p1",
+        speaker_name="Alice",
+        text="Good morning team.",
+        is_final=True,
+    )
+    session_storage.save_session("session_trans", [ev])
+
+    payload = {
+        "session_id": "session_trans",
+        "query_type": "translation",
+        "target_language": "Japanese",
+    }
+    response = await client.post("/api/ai/assist", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "Mocked LLM Response" in data["response"]
+
+    # Verify prompt contains translation target
+    assert len(mock_groq) == 1
+    system_prompt = mock_groq[0]["messages"][0]["content"]
+    user_prompt = mock_groq[0]["messages"][1]["content"]
+    assert "Japanese" in system_prompt
+    assert "Japanese" in user_prompt
+    assert "Alice: Good morning team." in user_prompt
+
+
+@pytest.mark.asyncio
+async def test_ai_assist_custom_query(client: httpx.AsyncClient, mock_groq: list):
+    ev = CaptionEvent(
+        segment_id="s1",
+        speaker_id="p1",
+        speaker_name="Alice",
+        text="The server budget is 500 dollars.",
+        is_final=True,
+    )
+    session_storage.save_session("session_custom", [ev])
+
+    payload = {
+        "session_id": "session_custom",
+        "query_type": "custom",
+        "query": "What is the server budget?",
+    }
+    response = await client.post("/api/ai/assist", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "Mocked LLM Response" in data["response"]
+
+    assert len(mock_groq) == 1
+    user_prompt = mock_groq[0]["messages"][1]["content"]
+    assert "Question: What is the server budget?" in user_prompt
+    assert "Alice: The server budget is 500 dollars." in user_prompt
+
+
+@pytest.mark.asyncio
+async def test_ai_assist_session_not_found(client: httpx.AsyncClient, mock_groq: list):
+    payload = {
+        "session_id": "ghost_session",
+        "query_type": "summary",
+    }
+    response = await client.post("/api/ai/assist", json=payload)
+    assert response.status_code == 404
+    assert len(mock_groq) == 0
+
+
+@pytest.mark.asyncio
+async def test_ai_assist_invalid_query_type(client: httpx.AsyncClient, mock_groq: list):
+    ev = CaptionEvent(
+        segment_id="s1",
+        speaker_id="p1",
+        text="Test",
+        is_final=True,
+    )
+    session_storage.save_session("session_valid", [ev])
+
+    payload = {
+        "session_id": "session_valid",
+        "query_type": "unknown_action",
+    }
+    response = await client.post("/api/ai/assist", json=payload)
+    assert response.status_code == 400
+    assert "Invalid query_type" in response.json()["detail"]
+    assert len(mock_groq) == 0
+
+
+@pytest.mark.asyncio
+async def test_ai_assist_empty_transcript(client: httpx.AsyncClient, mock_groq: list):
+    session_storage.save_session("session_empty", [])
+
+    payload = {
+        "session_id": "session_empty",
+        "query_type": "summary",
+    }
+    response = await client.post("/api/ai/assist", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "No transcript available" in data["response"]
+    assert len(mock_groq) == 0
+
+
+@pytest.mark.asyncio
+async def test_ai_assist_groq_api_error(client: httpx.AsyncClient, monkeypatch):
+    mock_client = AsyncMock()
+    mock_client.chat.completions.create = AsyncMock(side_effect=RuntimeError("Groq service timeout"))
+    monkeypatch.setattr("ws1_backend.main.get_groq_client", lambda **kwargs: mock_client)
+
+    ev = CaptionEvent(
+        segment_id="s1",
+        speaker_id="p1",
+        text="Hello",
+        is_final=True,
+    )
+    session_storage.save_session("session_err", [ev])
+
+    payload = {
+        "session_id": "session_err",
+        "query_type": "summary",
+    }
+    response = await client.post("/api/ai/assist", json=payload)
+    assert response.status_code == 500
+    assert "Failed to query Groq" in response.json()["detail"]
