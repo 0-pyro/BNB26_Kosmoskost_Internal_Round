@@ -223,14 +223,37 @@ async def get_session_transcript_endpoint(session_id: str):
     raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
 
 
+@app.post("/api/sessions/{session_id}/save")
+async def save_session_endpoint(session_id: str):
+    """
+    Explicitly persist the active session transcript to storage.
+    """
+    saved = await session_manager.save_room(session_id)
+    if not saved:
+        room = await session_manager.get_room(session_id)
+        if room and room.timeline:
+            session_storage.save_session(session_id, list(room.timeline), room.created_at)
+            saved = True
+    if not saved:
+        existing = session_storage.get_session(session_id)
+        if existing:
+            return {"status": "ok", "session_id": session_id, "message": "Session already persisted"}
+        raise HTTPException(status_code=404, detail=f"No active session '{session_id}' found to save")
+    return {"status": "ok", "session_id": session_id, "message": "Session saved to persistent storage"}
+
+
 GROQ_ASSIST_MODEL = os.environ.get("GROQ_ASSIST_MODEL", "qwen/qwen3.8-27b")
 
 
 class AIAssistRequest(BaseModel):
     session_id: str
-    query_type: str
+    query_type: Optional[str] = None
+    action: Optional[str] = None
     query: Optional[str] = None
+    prompt: Optional[str] = None
     target_language: Optional[str] = None
+    target_lang: Optional[str] = None
+    transcript_text: Optional[str] = None
 
 
 class AIAssistResponse(BaseModel):
@@ -270,7 +293,7 @@ async def query_groq_llm(
 async def ai_assist_endpoint(req: AIAssistRequest):
     """
     Post-Meeting AI Assist endpoint powered by qwen/qwen3.8-27b via Groq.
-    Supports 'summary', 'translation', and 'custom' query types.
+    Supports 'summary', 'translation', and 'custom' query types across any requested language.
     """
     transcript = session_storage.get_session_transcript(req.session_id)
     if transcript is None:
@@ -279,25 +302,29 @@ async def ai_assist_endpoint(req: AIAssistRequest):
         if active_room is not None:
             transcript = active_room.get_history()
 
-    if transcript is None:
-        raise HTTPException(status_code=404, detail=f"Session '{req.session_id}' not found")
-
-    if not transcript:
+    formatted_transcript = ""
+    if transcript:
+        finals = [ev for ev in transcript if getattr(ev, "is_final", False)]
+        events = finals if finals else transcript
+        formatted_lines = [
+            f"{ev.speaker_name or ev.speaker_id or 'Speaker'}: {ev.text}"
+            for ev in events
+        ]
+        formatted_transcript = "\n".join(formatted_lines)
+    elif req.transcript_text and req.transcript_text.strip():
+        formatted_transcript = req.transcript_text.strip()
+    elif transcript is not None:
         return AIAssistResponse(
             response="No transcript available for this session.",
             result="No transcript available for this session.",
         )
+    else:
+        raise HTTPException(status_code=404, detail=f"Session '{req.session_id}' not found")
 
-    # Format transcript using finalized events if available
-    finals = [ev for ev in transcript if getattr(ev, "is_final", False)]
-    events = finals if finals else transcript
-    formatted_lines = [
-        f"{ev.speaker_name or ev.speaker_id or 'Speaker'}: {ev.text}"
-        for ev in events
-    ]
-    formatted_transcript = "\n".join(formatted_lines)
+    raw_type = req.query_type or req.action or "summary"
+    q_type = raw_type.lower().strip()
+    target_lang = (req.target_language or req.target_lang or "Spanish").strip()
 
-    q_type = req.query_type.lower().strip()
     if q_type in ("summary", "summarize"):
         system_prompt = (
             "You are an expert meeting assistant. Provide a concise, clear summary "
@@ -305,14 +332,13 @@ async def ai_assist_endpoint(req: AIAssistRequest):
         )
         user_prompt = f"Please summarize the following meeting transcript:\n\n{formatted_transcript}"
     elif q_type in ("translation", "translate"):
-        target_lang = (req.target_language or "Spanish").strip()
         system_prompt = (
             f"You are a professional translator. Translate the following meeting transcript into {target_lang}. "
-            f"Preserve speaker names and conversation structure."
+            f"Preserve speaker names and conversation structure accurately in {target_lang}."
         )
         user_prompt = f"Please translate this meeting transcript into {target_lang}:\n\n{formatted_transcript}"
-    elif q_type in ("custom", "qa", "question"):
-        query = (req.query or "What was discussed in this meeting?").strip()
+    elif q_type in ("custom", "qa", "question", "query"):
+        query = (req.query or req.prompt or "What was discussed in this meeting?").strip()
         system_prompt = (
             "You are an intelligent meeting assistant. Answer the user's question accurately "
             "based on the provided meeting transcript."
@@ -321,7 +347,7 @@ async def ai_assist_endpoint(req: AIAssistRequest):
     else:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid query_type '{req.query_type}'. Expected 'summary', 'translation', or 'custom'.",
+            detail=f"Invalid query_type '{raw_type}'. Expected 'summary', 'translation', or 'custom'.",
         )
 
     try:

@@ -14,6 +14,7 @@ interface StatusBarProps {
   onDisconnect: () => void;
   onStopCapture: () => void;
   onOpenDrawer?: () => void;
+  onSaveSession?: () => void;
 }
 
 function statusLabel(s: ConnectionStatus): string {
@@ -46,6 +47,7 @@ export function StatusBar({
   onDisconnect,
   onStopCapture,
   onOpenDrawer,
+  onSaveSession,
 }: StatusBarProps) {
   const isLatencyGood = p95LatencyMs !== undefined && p95LatencyMs < 1500;
 
@@ -111,6 +113,16 @@ export function StatusBar({
             title="Open Past Session Archives"
           >
             Archives
+          </button>
+        )}
+        {connectionStatus === "joined" && onSaveSession && (
+          <button
+            className="btn btn-sm"
+            onClick={onSaveSession}
+            data-testid="save-session-btn"
+            title="Save current meeting to archives"
+          >
+            Save
           </button>
         )}
         {connectionStatus === "joined" && (

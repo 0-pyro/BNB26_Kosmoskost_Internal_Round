@@ -31,8 +31,32 @@ export function getMockAiResponse(action: "summarize" | "translate" | "query", s
   }
 
   if (action === "translate") {
-    const lang = detail || "Spanish";
-    return `[TRANSLATION: ${lang.toUpperCase()} // SESSION: ${sessionId}]
+    const lang = (detail || "Spanish").toLowerCase();
+    if (lang.includes("french")) {
+      return `[TRANSLATION: FRENCH // SESSION: ${sessionId}]
+======================================================
+• Alice: "Bonjour l'équipe. Aujourd'hui, nous validons le pipeline de fusion acoustique."
+• Bob: "J'ai testé l'estimateur GCC-PHAT TDOA. La latence reste inférieure à 80ms."
+• Charlie: "Le tampon circulaire a survécu au test de perte de paquets de 30%."
+• Lead: "Excellent. Préparons le rapport d'évaluation final."`;
+    }
+    if (lang.includes("german")) {
+      return `[TRANSLATION: GERMAN // SESSION: ${sessionId}]
+======================================================
+• Alice: "Guten Morgen Team. Heute validieren wir die akustische Fusionspipeline."
+• Bob: "Ich habe den GCC-PHAT TDOA-Schätzer getestet. Die Latenz bleibt unter 80ms."
+• Charlie: "Der Ringpuffer hat den 30% Paketverlusttest überstanden."
+• Lead: "Ausgezeichnet. Bereiten wir den finalen Evaluierungsbericht vor."`;
+    }
+    if (lang.includes("japanese")) {
+      return `[TRANSLATION: JAPANESE // SESSION: ${sessionId}]
+======================================================
+• Alice: 「おはようございます、チームの皆さん。今日は音響融合パイプラインを検証します。」
+• Bob: 「GCC-PHAT TDOA推定器をテストしました。レイテンシは80ms未満に保たれています。」
+• Charlie: 「リングバッファは30％のパケット損失テストに耐えました。」
+• Lead: 「素晴らしい。最終評価レポートを準備しましょう。」`;
+    }
+    return `[TRANSLATION: ${(detail || "Spanish").toUpperCase()} // SESSION: ${sessionId}]
 ======================================================
 • Alice: "Buenos días equipo. Hoy validamos la canalización de fusión acústica."
 • Bob: "He probado el estimador GCC-PHAT TDOA. La latencia se mantiene por debajo de 80ms."
@@ -72,10 +96,12 @@ export function AIAssistPanel({
     const endpoint = `${apiBaseUrl}/api/ai/assist`;
     const payload = {
       session_id: sessionId,
-      action,
+      query_type: action,
+      action: action,
       query: customPrompt,
       prompt: customPrompt,
-      target_lang: action === "translate" ? targetLang : undefined,
+      target_language: targetLang,
+      target_lang: targetLang,
       transcript_text: transcriptText,
     };
 

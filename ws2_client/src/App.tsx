@@ -99,14 +99,26 @@ function App() {
     [audio, ws],
   );
 
+  const handleSaveSession = useCallback(async () => {
+    if (!sessionConfig?.sessionId) return;
+    try {
+      await fetch(`/api/sessions/${sessionConfig.sessionId}/save`, { method: "POST" });
+    } catch {
+      // Fallback
+    }
+  }, [sessionConfig]);
+
   const handleDisconnect = useCallback(() => {
+    if (sessionConfig?.sessionId) {
+      fetch(`/api/sessions/${sessionConfig.sessionId}/save`, { method: "POST" }).catch(() => {});
+    }
     audio.stopCapture();
     ws.disconnect();
     wakeLock.release();
     clearCaptions();
     setLatencyHistory([]);
     setSessionConfig(null);
-  }, [audio, ws, wakeLock, clearCaptions]);
+  }, [audio, ws, wakeLock, clearCaptions, sessionConfig]);
 
   const latestLatency = latencyHistory.length > 0 ? latencyHistory[latencyHistory.length - 1] : undefined;
   const p95Latency = latencyHistory.length > 0
@@ -145,6 +157,7 @@ function App() {
         onDisconnect={handleDisconnect}
         onStopCapture={audio.stopCapture}
         onOpenDrawer={() => setIsDrawerOpen(true)}
+        onSaveSession={handleSaveSession}
       />
 
       <div className="view-toggle">
