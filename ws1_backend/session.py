@@ -73,6 +73,7 @@ class Room:
         self.connections: Dict[str, Connection] = {}
         self.timeline: List[CaptionEvent] = []
         self.cleanup_tasks: Dict[str, asyncio.Task] = {}
+        self.copilot_tasks: List[asyncio.Task] = []
         self.lock = asyncio.Lock()
         self.created_at: int = int(time.time() * 1000)
         self.active_speaker_id: Optional[str] = None
@@ -251,11 +252,33 @@ class Room:
 
     async def add_caption(self, caption: CaptionEvent, broadcast: bool = True) -> None:
         """Append CaptionEvent to the room history and optionally broadcast to all active clients."""
+        # Check for "Hey Roundtable" wake-word interception on finalized text segments
+        if caption.is_final and caption.speaker_id != "Roundtable AI":
+            from ws1_backend.copilot import extract_wake_word_query
+            query = extract_wake_word_query(caption.text)
+            if query is not None:
+                logger.info(
+                    "Wake-word intercepted in room %s from %s: %r",
+                    self.session_id,
+                    caption.speaker_name or caption.speaker_id,
+                    query,
+                )
+                task = asyncio.create_task(self.handle_voice_copilot(query))
+                self.copilot_tasks = [t for t in self.copilot_tasks if not t.done()]
+                self.copilot_tasks.append(task)
+                # Do NOT broadcast this segment as a normal user caption
+                return
+
         async with self.lock:
             self.timeline.append(caption)
 
         if broadcast:
             await self.broadcast(caption)
+
+    async def handle_voice_copilot(self, query: str) -> Optional[CaptionEvent]:
+        """Trigger Voice Copilot handling for this room."""
+        from ws1_backend.copilot import handle_voice_copilot
+        return await handle_voice_copilot(self, query)
 
     async def broadcast(
         self,
@@ -340,6 +363,9 @@ class SessionManager:
         """Clear all active rooms and cancel cleanup tasks (useful for testing)."""
         for room in list(self.rooms.values()):
             for task in list(room.cleanup_tasks.values()):
+                if not task.done():
+                    task.cancel()
+            for task in list(room.copilot_tasks):
                 if not task.done():
                     task.cancel()
         self.rooms.clear()
