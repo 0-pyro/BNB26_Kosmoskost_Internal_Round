@@ -79,7 +79,7 @@ SCRIPTED_CAPTIONS = [
 ]
 _caption_seq = 0
 
-SPEECH_RMS_THRESHOLD = float(os.environ.get("SPEECH_THRESHOLD", "0.015"))
+SPEECH_RMS_THRESHOLD = float(os.environ.get("SPEECH_THRESHOLD", "0.022"))
 
 # Initialize ASR Client instance
 _initial_key = os.environ.get("GROQ_API_KEY") or os.environ.get("ASSEMBLYAI_API_KEY")
@@ -109,6 +109,7 @@ class ParticipantAudioBuffer:
         self.speech_frames: int = 0
         self.silence_frames: int = 0
         self.start_ts: int = 0
+        self.last_emit_time: float = 0.0
 
     def add_frame(self, frame_bytes: bytes, capture_ts: int, rms: float) -> Optional[bytes]:
         """Add a 100ms frame. Returns concatenated audio bytes when an utterance completes."""
@@ -122,6 +123,8 @@ class ParticipantAudioBuffer:
             else frame_bytes
         )
 
+        now = time.time()
+
         if is_speech:
             if not self.frames:
                 self.start_ts = capture_ts
@@ -129,26 +132,34 @@ class ParticipantAudioBuffer:
             self.speech_frames += 1
             self.silence_frames = 0
 
-            # Max utterance duration: 25 frames (2.5 seconds) - emit chunk to keep latency low
-            if len(self.frames) >= 25:
-                complete_audio = b"".join(self.frames)
-                self.frames = []
-                self.speech_frames = 0
-                return complete_audio
-        else:
-            if self.speech_frames >= 4:  # At least 400ms of speech occurred
-                self.frames.append(payload)
-                self.silence_frames += 1
-
-                # If silence has lasted 5 frames (500ms), speaker finished phrase!
-                if self.silence_frames >= 5:
+            # Max utterance duration: 35 frames (3.5 seconds) - emit chunk to keep latency low
+            if len(self.frames) >= 35:
+                if now - self.last_emit_time >= 2.5:
                     complete_audio = b"".join(self.frames)
                     self.frames = []
                     self.speech_frames = 0
-                    self.silence_frames = 0
+                    self.last_emit_time = now
                     return complete_audio
+        else:
+            if self.speech_frames >= 7:  # At least 700ms of speech occurred
+                self.frames.append(payload)
+                self.silence_frames += 1
+
+                # If silence has lasted 7 frames (700ms), speaker finished phrase!
+                if self.silence_frames >= 7:
+                    if now - self.last_emit_time >= 2.5:
+                        complete_audio = b"".join(self.frames)
+                        self.frames = []
+                        self.speech_frames = 0
+                        self.silence_frames = 0
+                        self.last_emit_time = now
+                        return complete_audio
+                    else:
+                        self.frames.clear()
+                        self.speech_frames = 0
+                        self.silence_frames = 0
             else:
-                # Brief click or ambient noise (< 400ms), discard
+                # Brief click or ambient noise (< 700ms), discard
                 self.frames.clear()
                 self.speech_frames = 0
                 self.silence_frames = 0

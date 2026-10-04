@@ -241,6 +241,14 @@ class ASRClient:
                     return self._parse_groq_response(
                         result, speaker_id, speaker_name, start_ts
                     )
+                elif response.status_code == 429:
+                    logger.warning(
+                        "Groq ASR rate limited (HTTP 429). Cooling down for 3.5s (attempt %d/%d)...",
+                        attempt,
+                        self.max_retries,
+                    )
+                    await asyncio.sleep(3.5)
+                    continue
                 else:
                     logger.warning(
                         "Groq ASR returned HTTP %d: %s (attempt %d/%d)",
