@@ -32,6 +32,8 @@ class JoinRequest(BaseModel):
     type: Literal["JOIN"] = "JOIN"
     session_id: str
     participant_name: str
+    participant_id: Optional[str] = None
+
 
 
 class TimeSyncRequest(BaseModel):

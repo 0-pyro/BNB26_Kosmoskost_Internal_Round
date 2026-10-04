@@ -75,6 +75,49 @@ class Room:
         self.cleanup_tasks: Dict[str, asyncio.Task] = {}
         self.lock = asyncio.Lock()
         self.created_at: int = int(time.time() * 1000)
+        self.active_speaker_id: Optional[str] = None
+        self.active_speaker_rms: float = 0.0
+        self.active_speaker_ts: float = 0.0
+
+    def register_audio_energy(self, participant_id: str, rms: float) -> bool:
+        """
+        Multi-device room-level acoustic arbitration.
+        Returns True if this participant's frame should be processed for speech transcription,
+        or False if it is likely acoustic echo/crosstalk from another louder active participant.
+        """
+        now = time.time()
+        # If quiet/ambient, allow frame to pass through (for silence tracking)
+        if rms < 0.018:
+            return True
+
+        # If no active speaker or last speech was >1.5s ago, this participant takes the floor
+        if self.active_speaker_id is None or (now - self.active_speaker_ts > 1.5):
+            self.active_speaker_id = participant_id
+            self.active_speaker_rms = rms
+            self.active_speaker_ts = now
+            return True
+
+        # If this is the current active speaker, update their energy and timestamp
+        if self.active_speaker_id == participant_id:
+            self.active_speaker_rms = max(self.active_speaker_rms * 0.9, rms)
+            self.active_speaker_ts = now
+            return True
+
+        # Another participant is speaking at the same time:
+        # If this participant is significantly louder, hand off the floor
+        if rms > self.active_speaker_rms * 1.3:
+            self.active_speaker_id = participant_id
+            self.active_speaker_rms = rms
+            self.active_speaker_ts = now
+            return True
+
+        # If this participant's RMS is significantly weaker (<60% of active speaker),
+        # it is room reverberation / mic spillover from the active speaker. Suppress!
+        if rms < self.active_speaker_rms * 0.60:
+            return False
+
+        # Otherwise (comparable volume, natural overlap / barge-in), allow
+        return True
 
     async def join(
         self,
@@ -92,17 +135,22 @@ class Room:
             # 1. Check for reconnect by explicit requested_pid
             if requested_pid and requested_pid in self.participants:
                 existing = self.participants[requested_pid]
-                if existing.connection_state == ConnectionState.DISCONNECTED:
-                    logger.info(
-                        "Participant %s (%s) reconnected by pid in room %s",
-                        existing.name,
-                        existing.id,
-                        self.session_id,
-                    )
-                    self._cancel_cleanup(existing.id)
-                    existing.connection_state = ConnectionState.ACTIVE
-                    self.connections[existing.id] = connection
-                    return existing, list(self.timeline)
+                logger.info(
+                    "Participant %s (%s) reconnected by pid in room %s",
+                    existing.name,
+                    existing.id,
+                    self.session_id,
+                )
+                self._cancel_cleanup(existing.id)
+                old_conn = self.connections.get(existing.id)
+                if old_conn and old_conn != connection:
+                    try:
+                        asyncio.create_task(old_conn.close())
+                    except Exception:
+                        pass
+                existing.connection_state = ConnectionState.ACTIVE
+                self.connections[existing.id] = connection
+                return existing, list(self.timeline)
 
             # 2. Check for reconnect by participant_name if disconnected
             for pid, p in self.participants.items():

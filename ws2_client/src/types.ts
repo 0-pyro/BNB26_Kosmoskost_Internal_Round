@@ -19,6 +19,7 @@ export interface JoinRequest {
   type: "JOIN";
   session_id: string;
   participant_name: string;
+  participant_id?: string;
 }
 
 export interface TimeSyncRequest {

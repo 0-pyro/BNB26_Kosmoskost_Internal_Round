@@ -56,7 +56,12 @@ def audio_to_wav_bytes(
     if isinstance(audio, bytes):
         # Strip Roundtable 16-byte header if present
         if len(audio) >= AUDIO_HEADER_SIZE and audio[:2] == AUDIO_MAGIC:
-            payload = audio[AUDIO_HEADER_SIZE:]
+            frame_len = AUDIO_HEADER_SIZE + (1600 * 4)  # 6416 bytes
+            if len(audio) >= frame_len and len(audio) % frame_len == 0:
+                payloads = [audio[i + AUDIO_HEADER_SIZE : i + frame_len] for i in range(0, len(audio), frame_len)]
+                payload = b"".join(payloads)
+            else:
+                payload = audio[AUDIO_HEADER_SIZE:]
         else:
             payload = audio
         float_arr = decode_float32_payload(payload)
@@ -96,6 +101,27 @@ def audio_to_pcm16_bytes(
     clipped = np.clip(float_arr, -1.0, 1.0)
     int16_samples = (clipped * 32767.0).astype("<h")
     return int16_samples.tobytes()
+
+
+def _is_likely_hallucination(text: str) -> bool:
+    """Detect common Whisper hallucinations triggered by background noise, clicks, or silence."""
+    clean = text.lower().strip(" .?!,")
+    if not clean:
+        return True
+    if not any(c.isalpha() for c in clean):
+        return True
+    known_hallucinations = {
+        "thank you", "thank you very much", "all right", "okay", "oh", "hello there",
+        "you", "bye", "amara.org", "subs by", "text text text images",
+        "camera on the way to come", "that list", "it's just not how they want making yourself fit",
+    }
+    if clean in known_hallucinations:
+        return True
+    words = clean.split()
+    # If 3 or more repeated identical words (e.g. "text text text")
+    if len(words) >= 3 and len(set(words)) == 1:
+        return True
+    return False
 
 
 class ASRClient:
@@ -265,10 +291,7 @@ class ASRClient:
                 if not text:
                     continue
                     
-                # Filter out common Whisper hallucinations on silence/noise
-                clean_text = text.lower().strip(" .?!,")
-                hallucinations = ["thank you", "all right", "okay", "oh", "hello there", "you", "bye", "amara.org", "subs by"]
-                if clean_text in hallucinations or not any(c.isalpha() for c in text):
+                if _is_likely_hallucination(text):
                     logger.debug("Filtered out likely hallucination: '%s'", text)
                     continue
 
@@ -288,9 +311,7 @@ class ASRClient:
         else:
             full_text = data.get("text", "").strip()
             if full_text:
-                clean_text = full_text.lower().strip(" .?!,")
-                hallucinations = ["thank you", "all right", "okay", "oh", "hello there", "you", "bye", "amara.org", "subs by"]
-                if clean_text in hallucinations or not any(c.isalpha() for c in full_text):
+                if _is_likely_hallucination(full_text):
                     logger.debug("Filtered out likely hallucination: '%s'", full_text)
                     return events
                     

@@ -117,11 +117,20 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
       setStatus("connected");
       reconnectDelayRef.current = INITIAL_RECONNECT_MS;
 
+      let savedPid: string | undefined = undefined;
+      try {
+        const stored = sessionStorage.getItem(`roundtable_pid_${targetSessionId}_${targetParticipantName}`);
+        if (stored) savedPid = stored;
+      } catch {
+        // ignore
+      }
+
       // Send JOIN
       const joinMsg: JoinRequest = {
         type: "JOIN",
         session_id: targetSessionId,
         participant_name: targetParticipantName,
+        ...(savedPid ? { participant_id: savedPid } : {}),
       };
       ws.send(JSON.stringify(joinMsg));
     };
@@ -133,6 +142,11 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
           switch (msg.type) {
             case "JOIN_ACK": {
               setParticipantId(msg.participant_id);
+              try {
+                sessionStorage.setItem(`roundtable_pid_${targetSessionId}_${targetParticipantName}`, msg.participant_id);
+              } catch {
+                // ignore
+              }
               setStatus("joined");
               onJoinAckRef.current(msg);
               // Flush any buffered frames
@@ -180,6 +194,13 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
   const disconnect = useCallback(() => {
     intentionalCloseRef.current = true;
     clearReconnectTimer();
+    try {
+      const targetSessionId = configRef.current.sessionId || sessionId;
+      const targetParticipantName = configRef.current.participantName || participantName;
+      sessionStorage.removeItem(`roundtable_pid_${targetSessionId}_${targetParticipantName}`);
+    } catch {
+      // ignore
+    }
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
@@ -188,7 +209,7 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
     setParticipantId(null);
     offlineBufferRef.current = [];
     bufferStartRef.current = null;
-  }, [clearReconnectTimer]);
+  }, [clearReconnectTimer, sessionId, participantName]);
 
   // Send binary data, buffering if offline (up to maxBufferSecs)
   const sendBinary = useCallback(

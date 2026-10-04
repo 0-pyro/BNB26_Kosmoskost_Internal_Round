@@ -114,10 +114,18 @@ class ParticipantAudioBuffer:
         """Add a 100ms frame. Returns concatenated audio bytes when an utterance completes."""
         is_speech = rms >= SPEECH_RMS_THRESHOLD
 
+        # Strip Roundtable 16-byte header if present so self.frames
+        # only accumulates raw, continuous PCM audio samples!
+        payload = (
+            frame_bytes[AUDIO_HEADER_SIZE:]
+            if len(frame_bytes) >= AUDIO_HEADER_SIZE and frame_bytes[:2] == AUDIO_MAGIC
+            else frame_bytes
+        )
+
         if is_speech:
             if not self.frames:
                 self.start_ts = capture_ts
-            self.frames.append(frame_bytes)
+            self.frames.append(payload)
             self.speech_frames += 1
             self.silence_frames = 0
 
@@ -129,7 +137,7 @@ class ParticipantAudioBuffer:
                 return complete_audio
         else:
             if self.speech_frames >= 4:  # At least 400ms of speech occurred
-                self.frames.append(frame_bytes)
+                self.frames.append(payload)
                 self.silence_frames += 1
 
                 # If silence has lasted 5 frames (500ms), speaker finished phrase!
@@ -356,6 +364,12 @@ async def _handle_websocket_connection(websocket: WebSocket) -> None:
                     caption = _generate_mock_caption(speaker_id, speaker_name)
                     await current_room.add_caption(caption, broadcast=True)
                     continue
+
+                # Multi-device room acoustic arbitration (suppress quiet room echo / spillover)
+                if current_room and not is_test_env and current_participant:
+                    should_process = current_room.register_audio_energy(current_participant.id, selected.rms)
+                    if not should_process:
+                        continue
 
                 # Live Audio Buffer with Voice Activity Detection (VAD)
                 audio_buffer.participant_id = current_participant.id
