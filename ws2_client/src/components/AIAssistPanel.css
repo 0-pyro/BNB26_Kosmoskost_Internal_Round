@@ -92,10 +92,67 @@
   outline: none;
 }
 
+.ai-prompt-box-section {
+  background: rgba(29, 38, 125, 0.45);
+  border: 1px solid var(--border);
+  box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.1);
+  padding: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.ai-prompt-box-header {
+  margin-bottom: 0.4rem;
+}
+
+.ai-prompt-label {
+  display: block;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  color: #D4ADFC;
+  font-weight: bold;
+}
+
 .ai-custom-query-form {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.ai-quick-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.quick-prompts-label {
+  font-size: 0.85rem;
+  color: rgba(212, 173, 252, 0.7);
+  text-transform: uppercase;
+}
+
+.quick-prompt-chip {
+  background: var(--bg-secondary);
+  border: 1px solid var(--surface-hover);
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 0.2rem 0.55rem;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.quick-prompt-chip:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: #ffffff;
+  border-color: #D4ADFC;
+  transform: translate(1px, 1px);
+}
+
+.quick-prompt-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .ai-custom-query-input {

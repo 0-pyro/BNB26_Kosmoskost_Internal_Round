@@ -226,20 +226,35 @@ async def get_session_transcript_endpoint(session_id: str):
 @app.post("/api/sessions/{session_id}/save")
 async def save_session_endpoint(session_id: str):
     """
-    Explicitly persist the active session transcript to storage.
+    Explicitly persist the active session transcript to storage with a timestamp suffix,
+    allowing multiple independent saves/snapshots of the same room.
     """
-    saved = await session_manager.save_room(session_id)
-    if not saved:
-        room = await session_manager.get_room(session_id)
-        if room and room.timeline:
-            session_storage.save_session(session_id, list(room.timeline), room.created_at)
-            saved = True
-    if not saved:
-        existing = session_storage.get_session(session_id)
-        if existing:
-            return {"status": "ok", "session_id": session_id, "message": "Session already persisted"}
-        raise HTTPException(status_code=404, detail=f"No active session '{session_id}' found to save")
-    return {"status": "ok", "session_id": session_id, "message": "Session saved to persistent storage"}
+    now = int(time.time() * 1000)
+    time_tag = time.strftime("%Y%m%d_%H%M%S", time.localtime(now / 1000))
+    archive_id = f"{session_id}_{time_tag}"
+
+    room = await session_manager.get_room(session_id)
+    if room and room.timeline:
+        session_storage.save_session(archive_id, list(room.timeline), created_at=now)
+        session_storage.save_session(session_id, list(room.timeline), created_at=room.created_at)
+        return {
+            "status": "ok",
+            "session_id": archive_id,
+            "base_session_id": session_id,
+            "message": f"Saved snapshot '{archive_id}'",
+        }
+
+    existing = session_storage.get_session_transcript(session_id)
+    if existing:
+        session_storage.save_session(archive_id, existing, created_at=now)
+        return {
+            "status": "ok",
+            "session_id": archive_id,
+            "base_session_id": session_id,
+            "message": f"Saved snapshot '{archive_id}'",
+        }
+
+    raise HTTPException(status_code=404, detail=f"No active session '{session_id}' found to save")
 
 
 GROQ_ASSIST_MODEL = os.environ.get("GROQ_ASSIST_MODEL", "qwen/qwen3.8-27b")

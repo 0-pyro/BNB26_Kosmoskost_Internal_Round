@@ -256,6 +256,14 @@ class Room:
             if self.timeline:
                 try:
                     from ws1_backend.storage import session_storage
+                    now = int(time.time() * 1000)
+                    time_tag = time.strftime("%Y%m%d_%H%M%S", time.localtime(now / 1000))
+                    archive_id = f"{self.session_id}_{time_tag}"
+                    session_storage.save_session(
+                        session_id=archive_id,
+                        transcript=list(self.timeline),
+                        created_at=now,
+                    )
                     session_storage.save_session(
                         session_id=self.session_id,
                         transcript=list(self.timeline),
@@ -424,6 +432,14 @@ class SessionManager:
             room = self.rooms.get(session_id)
         if room and room.timeline:
             from ws1_backend.storage import session_storage
+            now = int(time.time() * 1000)
+            time_tag = time.strftime("%Y%m%d_%H%M%S", time.localtime(now / 1000))
+            archive_id = f"{session_id}_{time_tag}"
+            session_storage.save_session(
+                session_id=archive_id,
+                transcript=list(room.timeline),
+                created_at=now,
+            )
             session_storage.save_session(
                 session_id=room.session_id,
                 transcript=list(room.timeline),

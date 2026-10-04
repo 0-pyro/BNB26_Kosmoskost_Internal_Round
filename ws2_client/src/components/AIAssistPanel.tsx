@@ -154,9 +154,66 @@ export function AIAssistPanel({
         </div>
       </div>
 
+      {/* Prominent Prompt Box */}
+      <div className="ai-prompt-box-section">
+        <div className="ai-prompt-box-header">
+          <label className="ai-prompt-label" htmlFor="ai-query-input">
+            &gt; PROMPT SESSION CO-PROCESSOR / QUERY ARCHIVE:
+          </label>
+        </div>
+        <form className="ai-custom-query-form" onSubmit={handleCustomQuerySubmit}>
+          <input
+            id="ai-query-input"
+            type="text"
+            className="ai-custom-query-input"
+            value={customQuery}
+            onChange={(e) => setCustomQuery(e.target.value)}
+            placeholder="Ask anything about this session (e.g. 'What were key decisions?', 'Who assigned tasks?')..."
+            data-testid="ai-custom-query-input"
+            disabled={loading}
+          />
+          <button
+            type="submit"
+            className="ai-btn ai-btn-primary"
+            disabled={loading || !customQuery.trim()}
+            data-testid="ai-query-btn"
+          >
+            [Ask AI]
+          </button>
+        </form>
+
+        <div className="ai-quick-prompts">
+          <span className="quick-prompts-label">Quick Prompts:</span>
+          <button
+            type="button"
+            className="quick-prompt-chip"
+            onClick={() => requestAssist("query", "Summarize all key decisions made in this meeting")}
+            disabled={loading}
+          >
+            Key Decisions
+          </button>
+          <button
+            type="button"
+            className="quick-prompt-chip"
+            onClick={() => requestAssist("query", "List all action items and who is responsible for each")}
+            disabled={loading}
+          >
+            Action Items
+          </button>
+          <button
+            type="button"
+            className="quick-prompt-chip"
+            onClick={() => requestAssist("query", "Who spoke the most and what were their primary viewpoints?")}
+            disabled={loading}
+          >
+            Speaker Breakdown
+          </button>
+        </div>
+      </div>
+
       <div className="ai-actions-row">
         <button
-          className="ai-btn ai-btn-primary"
+          className="ai-btn"
           onClick={() => requestAssist("summarize", "Summarize meeting key points")}
           disabled={loading}
           data-testid="ai-summarize-btn"
@@ -186,26 +243,6 @@ export function AIAssistPanel({
           <option value="Japanese">Japanese</option>
         </select>
       </div>
-
-      <form className="ai-custom-query-form" onSubmit={handleCustomQuerySubmit}>
-        <input
-          type="text"
-          className="ai-custom-query-input"
-          value={customQuery}
-          onChange={(e) => setCustomQuery(e.target.value)}
-          placeholder="Ask AI custom query about this session..."
-          data-testid="ai-custom-query-input"
-          disabled={loading}
-        />
-        <button
-          type="submit"
-          className="ai-btn"
-          disabled={loading || !customQuery.trim()}
-          data-testid="ai-query-btn"
-        >
-          [Ask AI]
-        </button>
-      </form>
 
       {loading && (
         <div className="ai-loading-state" data-testid="ai-loading">
