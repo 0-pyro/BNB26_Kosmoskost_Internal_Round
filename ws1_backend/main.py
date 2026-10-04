@@ -16,9 +16,9 @@ import os
 import struct
 import sys
 import time
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
@@ -45,6 +45,7 @@ from ws1_backend.session import (
     SessionManager,
     session_manager,
 )
+from ws1_backend.storage import session_storage
 from ws3_dsp.select import compute_rms, get_best_frame
 from ws4_eval.asr_client import ASRClient
 
@@ -194,6 +195,32 @@ async def health_check():
         "service": "ws1_backend",
         "active_rooms": len(ROOMS),
     }
+
+
+@app.get("/api/sessions", response_model=List[Dict[str, Any]])
+async def get_saved_sessions():
+    """
+    Returns a list of saved sessions (id, timestamp, duration).
+    """
+    return session_storage.list_sessions()
+
+
+@app.get("/api/sessions/{session_id}", response_model=List[CaptionEvent])
+async def get_session_transcript_endpoint(session_id: str):
+    """
+    Returns the transcript (list of CaptionEvents) for that session.
+    """
+    transcript = session_storage.get_session_transcript(session_id)
+    if transcript is not None:
+        return transcript
+
+    # Fallback to active room in memory if not yet persisted
+    active_room = await session_manager.get_room(session_id)
+    if active_room is not None:
+        return active_room.get_history()
+
+    raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
+
 
 
 async def _handle_websocket_connection(websocket: WebSocket) -> None:

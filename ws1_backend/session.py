@@ -249,6 +249,40 @@ class Room:
             # Participant reconnected; cleanup cancelled
             pass
 
+    async def close(self) -> None:
+        """Close the room, persist transcript to storage, and cancel pending tasks."""
+        async with self.lock:
+            if self.timeline:
+                try:
+                    from ws1_backend.storage import session_storage
+                    session_storage.save_session(
+                        session_id=self.session_id,
+                        transcript=list(self.timeline),
+                        created_at=self.created_at,
+                    )
+                except Exception as exc:
+                    logger.warning("Failed to persist session %s on close: %s", self.session_id, exc)
+            for task in list(self.cleanup_tasks.values()):
+                if not task.done():
+                    task.cancel()
+            self.cleanup_tasks.clear()
+
+    async def clear(self) -> None:
+        """Persist transcript to storage and clear the room timeline."""
+        async with self.lock:
+            if self.timeline:
+                try:
+                    from ws1_backend.storage import session_storage
+                    session_storage.save_session(
+                        session_id=self.session_id,
+                        transcript=list(self.timeline),
+                        created_at=self.created_at,
+                    )
+                except Exception as exc:
+                    logger.warning("Failed to persist session %s on clear: %s", self.session_id, exc)
+                self.timeline.clear()
+
+
     async def add_caption(self, caption: CaptionEvent, broadcast: bool = True) -> None:
         """Append CaptionEvent to the room history and optionally broadcast to all active clients."""
         async with self.lock:
@@ -323,26 +357,62 @@ class SessionManager:
             return self.rooms.get(session_id)
 
     async def remove_room(self, session_id: str) -> Optional[Room]:
-        """Remove a room by session_id."""
+        """Remove a room by session_id and persist its transcript."""
         async with self._lock:
-            return self.rooms.pop(session_id, None)
+            room = self.rooms.pop(session_id, None)
+        if room:
+            await room.close()
+        return room
 
     async def remove_room_if_empty(self, session_id: str) -> bool:
-        """Remove room if it has 0 participants left."""
+        """Remove room if it has 0 participants left and persist its transcript."""
         async with self._lock:
             room = self.rooms.get(session_id)
             if room and not room.participants:
                 self.rooms.pop(session_id, None)
-                return True
-            return False
+            else:
+                room = None
+        if room:
+            await room.close()
+            return True
+        return False
+
+    async def close_room(self, session_id: str) -> Optional[Room]:
+        """Explicitly close and persist an active room."""
+        return await self.remove_room(session_id)
+
+    async def save_room(self, session_id: str) -> bool:
+        """Persist an active room's transcript to storage without removing it."""
+        async with self._lock:
+            room = self.rooms.get(session_id)
+        if room and room.timeline:
+            from ws1_backend.storage import session_storage
+            session_storage.save_session(
+                session_id=room.session_id,
+                transcript=list(room.timeline),
+                created_at=room.created_at,
+            )
+            return True
+        return False
 
     def reset(self) -> None:
-        """Clear all active rooms and cancel cleanup tasks (useful for testing)."""
+        """Clear all active rooms, persist any transcripts, and cancel cleanup tasks."""
         for room in list(self.rooms.values()):
             for task in list(room.cleanup_tasks.values()):
                 if not task.done():
                     task.cancel()
+            if room.timeline:
+                try:
+                    from ws1_backend.storage import session_storage
+                    session_storage.save_session(
+                        session_id=room.session_id,
+                        transcript=list(room.timeline),
+                        created_at=room.created_at,
+                    )
+                except Exception as exc:
+                    logger.warning("Failed to persist session %s on reset: %s", room.session_id, exc)
         self.rooms.clear()
+
 
 
 # Default singleton instance
